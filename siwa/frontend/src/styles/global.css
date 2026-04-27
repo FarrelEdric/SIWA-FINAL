@@ -1,22 +1,34 @@
 :root {
-  --primary: #6366f1;
-  --primary-hover: #4f46e5;
-  --secondary: #ec4899;
-  --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
-  --glass-bg: rgba(255, 255, 255, 0.05);
-  --glass-border: rgba(255, 255, 255, 0.1);
-  --text-primary: #f8fafc;
-  --text-secondary: #94a3b8;
-  --success: #10b981;
-  --danger: #ef4444;
-  --warning: #f59e0b;
+  --primary: #4f8b65;
+  --primary-hover: #3f7252;
+  --primary-soft: rgba(79, 139, 101, 0.12);
+  --secondary: #78a989;
+  --bg-gradient: radial-gradient(
+    circle at top left,
+    #f3f8f3 0%,
+    #f8faf8 45%,
+    #f2f5f2 100%
+  );
+  --glass-bg: #ffffff;
+  --glass-border: #dce3dc;
+  --text-primary: #303630;
+  --text-secondary: #6f7a70;
+  --text-strong: #171a18;
+  --surface-muted: #f2f5f2;
+  --success: #3f8a62;
+  --danger: #b74a4a;
+  --warning: #9a7a35;
 }
 
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-family:
+    "Inter",
+    system-ui,
+    -apple-system,
+    sans-serif;
 }
 
 body {
@@ -28,11 +40,10 @@ body {
 
 .glass-card {
   background: var(--glass-bg);
-  backdrop-filter: blur(12px);
   border: 1px solid var(--glass-border);
   border-radius: 1rem;
   padding: 1.5rem;
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  box-shadow: 0 10px 30px rgba(51, 64, 52, 0.08);
 }
 
 .btn {
@@ -65,7 +76,7 @@ body {
 }
 
 .btn-outline:hover {
-  background: var(--glass-bg);
+  background: var(--surface-muted);
 }
 
 table {
@@ -86,17 +97,25 @@ td {
   border-bottom: 1px solid var(--glass-border);
 }
 
-input, select, textarea {
+input,
+select,
+textarea {
   width: 100%;
   padding: 0.75rem;
-  background: rgba(255, 255, 255, 0.05);
+  background: #ffffff;
   border: 1px solid var(--glass-border);
   border-radius: 0.5rem;
-  color: white;
+  color: var(--text-primary);
   margin-top: 0.5rem;
 }
 
 input:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+select:focus,
+textarea:focus {
   outline: none;
   border-color: var(--primary);
 }
@@ -108,6 +127,15 @@ input:focus {
   font-weight: 600;
 }
 
-.badge-success { background: rgba(16, 185, 129, 0.1); color: var(--success); }
-.badge-danger { background: rgba(239, 68, 68, 0.1); color: var(--danger); }
-.badge-warning { background: rgba(245, 158, 11, 0.1); color: var(--warning); }
+.badge-success {
+  background: rgba(63, 138, 98, 0.14);
+  color: var(--success);
+}
+.badge-danger {
+  background: rgba(183, 74, 74, 0.12);
+  color: var(--danger);
+}
+.badge-warning {
+  background: rgba(154, 122, 53, 0.14);
+  color: var(--warning);
+}
