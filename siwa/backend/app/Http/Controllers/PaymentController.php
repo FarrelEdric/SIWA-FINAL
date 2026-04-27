@@ -20,9 +20,25 @@ class PaymentController extends Controller
     {
         $query = Payment::with(['house', 'resident']);
 
+        $q = trim((string) $request->query('q', ''));
+        if ($q !== '') {
+            $query->where(function ($sub) use ($q) {
+                $like = '%' . $q . '%';
+                $sub->where('payment_type', 'like', $like)
+                    ->orWhere('status', 'like', $like)
+                    ->orWhereHas('house', function ($h) use ($like) {
+                        $h->where('house_number', 'like', $like);
+                    })
+                    ->orWhereHas('resident', function ($r) use ($like) {
+                        $r->where('full_name', 'like', $like)
+                            ->orWhere('phone_number', 'like', $like);
+                    });
+            });
+        }
+
         // Backward compatible: without pagination params, return full list.
         if (!$request->has('page') && !$request->has('per_page')) {
-            return response()->json($query->get());
+            return response()->json($query->orderByDesc('id')->get());
         }
 
         $perPage = (int) $request->query('per_page', 10);

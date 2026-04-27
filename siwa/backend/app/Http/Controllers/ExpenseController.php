@@ -9,18 +9,29 @@ class ExpenseController extends Controller
 {
     public function index(Request $request)
     {
+        $query = Expense::query();
+
+        $q = trim((string) $request->query('q', ''));
+        if ($q !== '') {
+            $query->where(function ($sub) use ($q) {
+                $like = '%' . $q . '%';
+                $sub->where('title', 'like', $like)
+                    ->orWhere('category', 'like', $like)
+                    ->orWhere('description', 'like', $like)
+                    ->orWhere('amount', 'like', $like);
+            });
+        }
+
         // Backward compatible: without pagination params, return full list.
         if (!$request->has('page') && !$request->has('per_page')) {
-            return response()->json(Expense::all());
+            return response()->json($query->orderByDesc('id')->get());
         }
 
         $perPage = (int) $request->query('per_page', 10);
         $perPage = max(1, min($perPage, 100));
 
         return response()->json(
-            Expense::query()
-                ->orderByDesc('id')
-                ->paginate($perPage)
+            $query->orderByDesc('id')->paginate($perPage)
         );
     }
 
@@ -63,5 +74,11 @@ class ExpenseController extends Controller
     {
         $expense->delete();
         return response()->json(null, 204);
+    }
+
+    public function destroyAll()
+    {
+        Expense::query()->delete();
+        return response()->json(['message' => 'All expenses deleted'], 200);
     }
 }

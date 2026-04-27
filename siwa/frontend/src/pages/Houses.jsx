@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { houseService, residentService } from "../services/api";
-import { Home, UserPlus, UserMinus, History } from "lucide-react";
+import { Home, UserPlus, UserMinus, History, Search } from "lucide-react";
 import Swal from "sweetalert2";
 
 const Houses = () => {
@@ -10,6 +10,7 @@ const Houses = () => {
   const [perPage, setPerPage] = useState(10);
   const [lastPage, setLastPage] = useState(1);
   const [total, setTotal] = useState(0);
+  const [searchTerm, setSearchTerm] = useState("");
   const [residents, setResidents] = useState([]);
   const [showAssignModal, setShowAssignModal] = useState(false);
   const [selectedHouse, setSelectedHouse] = useState(null);
@@ -26,7 +27,7 @@ const Houses = () => {
   useEffect(() => {
     fetchHouses();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, perPage]);
+  }, [page, perPage, searchTerm]);
 
   const normalizeListResponse = (payload) => {
     if (Array.isArray(payload)) {
@@ -62,7 +63,11 @@ const Houses = () => {
   const fetchHouses = async () => {
     try {
       setLoading(true);
-      const res = await houseService.getAll({ page, per_page: perPage });
+      const res = await houseService.getAll({
+        page,
+        per_page: perPage,
+        q: searchTerm,
+      });
       const { items, meta } = normalizeListResponse(res.data);
       setHouses(items);
       setPage(meta.currentPage);
@@ -145,6 +150,23 @@ const Houses = () => {
           Kelola status hunian dan histori warga per rumah.
         </p>
       </header>
+
+      <div
+        className="glass-card"
+        style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}
+      >
+        <Search size={18} style={{ color: "var(--text-secondary)" }} />
+        <input
+          type="text"
+          placeholder="Cari nomor rumah / status / nama penghuni..."
+          value={searchTerm}
+          onChange={(e) => {
+            setSearchTerm(e.target.value);
+            setPage(1);
+          }}
+          style={{ width: "100%" }}
+        />
+      </div>
 
       <div
         style={{

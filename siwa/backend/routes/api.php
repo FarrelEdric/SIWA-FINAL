@@ -16,6 +16,7 @@ Route::post('houses/{house}/vacate', [HouseController::class, 'vacate']);
 Route::get('payments/calculate', [PaymentController::class, 'calculate']);
 Route::apiResource('payments', PaymentController::class)->only(['index', 'store', 'show']);
 
+Route::delete('expenses', [ExpenseController::class, 'destroyAll']);
 Route::apiResource('expenses', ExpenseController::class);
 
 Route::get('dashboard', [DashboardController::class, 'index']);

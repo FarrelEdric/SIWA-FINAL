@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { paymentService, houseService } from "../services/api";
-import { CreditCard, Search, Calendar } from "lucide-react";
+import { CreditCard, Search } from "lucide-react";
 import Swal from "sweetalert2";
 
 const Payments = () => {
@@ -10,6 +10,7 @@ const Payments = () => {
   const [perPage, setPerPage] = useState(10);
   const [lastPage, setLastPage] = useState(1);
   const [total, setTotal] = useState(0);
+  const [searchTerm, setSearchTerm] = useState("");
   const [houses, setHouses] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -30,7 +31,7 @@ const Payments = () => {
   useEffect(() => {
     fetchPayments();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, perPage]);
+  }, [page, perPage, searchTerm]);
 
   const normalizeListResponse = (payload) => {
     if (Array.isArray(payload)) {
@@ -66,7 +67,11 @@ const Payments = () => {
   const fetchPayments = async () => {
     try {
       setLoading(true);
-      const res = await paymentService.getAll({ page, per_page: perPage });
+      const res = await paymentService.getAll({
+        page,
+        per_page: perPage,
+        q: searchTerm,
+      });
       const { items, meta } = normalizeListResponse(res.data);
       setPayments(items);
       setPage(meta.currentPage);
@@ -136,7 +141,11 @@ const Payments = () => {
       });
       setShowModal(false);
       // Refresh first page after new payment
-      const res = await paymentService.getAll({ page: 1, per_page: perPage });
+      const res = await paymentService.getAll({
+        page: 1,
+        per_page: perPage,
+        q: searchTerm,
+      });
       const { items, meta } = normalizeListResponse(res.data);
       setPayments(items);
       setPage(meta.currentPage);
@@ -161,6 +170,8 @@ const Payments = () => {
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
+          gap: "1rem",
+          flexWrap: "wrap",
         }}
       >
         <div>
@@ -171,10 +182,43 @@ const Payments = () => {
             Catat dan pantau pembayaran iuran satpam & kebersihan.
           </p>
         </div>
-        <button className="btn btn-primary" onClick={() => setShowModal(true)}>
-          <CreditCard size={20} />
-          Input Pembayaran
-        </button>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "0.75rem",
+            flexWrap: "wrap",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "0.5rem",
+              minWidth: "260px",
+            }}
+          >
+            <Search size={18} style={{ color: "var(--text-secondary)" }} />
+            <input
+              type="text"
+              placeholder="Cari rumah / penghuni / jenis / status..."
+              value={searchTerm}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                setPage(1);
+              }}
+              style={{ width: "100%" }}
+            />
+          </div>
+
+          <button
+            className="btn btn-primary"
+            onClick={() => setShowModal(true)}
+          >
+            <CreditCard size={20} />
+            Input Pembayaran
+          </button>
+        </div>
       </header>
 
       <div className="glass-card">

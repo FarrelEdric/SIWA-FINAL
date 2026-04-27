@@ -19,9 +19,22 @@ class HouseController extends Controller
     {
         $query = House::with(['currentResident', 'occupancyHistories.resident']);
 
+        $q = trim((string) $request->query('q', ''));
+        if ($q !== '') {
+            $query->where(function ($sub) use ($q) {
+                $like = '%' . $q . '%';
+                $sub->where('house_number', 'like', $like)
+                    ->orWhere('status', 'like', $like)
+                    ->orWhereHas('currentResident', function ($r) use ($like) {
+                        $r->where('full_name', 'like', $like)
+                            ->orWhere('phone_number', 'like', $like);
+                    });
+            });
+        }
+
         // Backward compatible: without pagination params, return full list.
         if (!$request->has('page') && !$request->has('per_page')) {
-            return response()->json($query->get());
+            return response()->json($query->orderByDesc('id')->get());
         }
 
         $perPage = (int) $request->query('per_page', 10);

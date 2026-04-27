@@ -1,6 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { residentService } from "../services/api";
-import { Plus, Edit2, Trash2, Phone, User as UserIcon } from "lucide-react";
+import {
+  Plus,
+  Edit2,
+  Trash2,
+  Phone,
+  User as UserIcon,
+  Search,
+} from "lucide-react";
 import Swal from "sweetalert2";
 
 const Residents = () => {
@@ -10,6 +17,7 @@ const Residents = () => {
   const [perPage, setPerPage] = useState(10);
   const [lastPage, setLastPage] = useState(1);
   const [total, setTotal] = useState(0);
+  const [searchTerm, setSearchTerm] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [editingResident, setEditingResident] = useState(null);
@@ -56,7 +64,7 @@ const Residents = () => {
   useEffect(() => {
     fetchResidents();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, perPage]);
+  }, [page, perPage, searchTerm]);
 
   const normalizeListResponse = (payload) => {
     if (Array.isArray(payload)) {
@@ -92,7 +100,11 @@ const Residents = () => {
   const fetchResidents = async () => {
     try {
       setLoading(true);
-      const res = await residentService.getAll({ page, per_page: perPage });
+      const res = await residentService.getAll({
+        page,
+        per_page: perPage,
+        q: searchTerm,
+      });
       const { items, meta } = normalizeListResponse(res.data);
       setResidents(items);
       setPage(meta.currentPage);
@@ -134,7 +146,7 @@ const Residents = () => {
       closeModal();
       // Refresh first page so new data is visible and avoid perceived duplicates.
       await residentService
-        .getAll({ page: 1, per_page: perPage })
+        .getAll({ page: 1, per_page: perPage, q: searchTerm })
         .then((res) => {
           const { items, meta } = normalizeListResponse(res.data);
           setResidents(items);
@@ -233,6 +245,27 @@ const Residents = () => {
           </p>
         </div>
         <div style={{ display: "flex", gap: "0.75rem" }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "0.5rem",
+              minWidth: "260px",
+            }}
+          >
+            <Search size={18} style={{ color: "var(--text-secondary)" }} />
+            <input
+              type="text"
+              placeholder="Cari nama / telepon / status..."
+              value={searchTerm}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                setPage(1);
+              }}
+              style={{ width: "100%" }}
+            />
+          </div>
+
           <button
             className="btn btn-outline"
             style={{ color: "var(--danger)" }}

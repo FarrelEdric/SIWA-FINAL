@@ -10,18 +10,29 @@ class ResidentController extends Controller
 {
     public function index(Request $request)
     {
+        $query = Resident::query();
+
+        $q = trim((string) $request->query('q', ''));
+        if ($q !== '') {
+            $query->where(function ($sub) use ($q) {
+                $like = '%' . $q . '%';
+                $sub->where('full_name', 'like', $like)
+                    ->orWhere('phone_number', 'like', $like)
+                    ->orWhere('resident_status', 'like', $like)
+                    ->orWhere('marital_status', 'like', $like);
+            });
+        }
+
         // Backward compatible: without pagination params, return full list.
         if (!$request->has('page') && !$request->has('per_page')) {
-            return response()->json(Resident::all());
+            return response()->json($query->orderByDesc('id')->get());
         }
 
         $perPage = (int) $request->query('per_page', 10);
         $perPage = max(1, min($perPage, 100));
 
         return response()->json(
-            Resident::query()
-                ->orderByDesc('id')
-                ->paginate($perPage)
+            $query->orderByDesc('id')->paginate($perPage)
         );
     }
 

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { expenseService } from "../services/api";
-import { Receipt, Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, Search } from "lucide-react";
 import Swal from "sweetalert2";
 
 const Expenses = () => {
@@ -10,6 +10,7 @@ const Expenses = () => {
   const [perPage, setPerPage] = useState(10);
   const [lastPage, setLastPage] = useState(1);
   const [total, setTotal] = useState(0);
+  const [searchTerm, setSearchTerm] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [formData, setFormData] = useState({
@@ -24,7 +25,7 @@ const Expenses = () => {
   useEffect(() => {
     fetchExpenses();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, perPage]);
+  }, [page, perPage, searchTerm]);
 
   const normalizeListResponse = (payload) => {
     if (Array.isArray(payload)) {
@@ -60,7 +61,11 @@ const Expenses = () => {
   const fetchExpenses = async () => {
     try {
       setLoading(true);
-      const res = await expenseService.getAll({ page, per_page: perPage });
+      const res = await expenseService.getAll({
+        page,
+        per_page: perPage,
+        q: searchTerm,
+      });
       const { items, meta } = normalizeListResponse(res.data);
       setExpenses(items);
       setPage(meta.currentPage);
@@ -90,7 +95,11 @@ const Expenses = () => {
         text: "Pengeluaran berhasil dicatat.",
       });
       setShowModal(false);
-      const res = await expenseService.getAll({ page: 1, per_page: perPage });
+      const res = await expenseService.getAll({
+        page: 1,
+        per_page: perPage,
+        q: searchTerm,
+      });
       const { items, meta } = normalizeListResponse(res.data);
       setExpenses(items);
       setPage(meta.currentPage);
@@ -138,6 +147,37 @@ const Expenses = () => {
     }
   };
 
+  const handleDeleteAll = async () => {
+    const result = await Swal.fire({
+      icon: "warning",
+      title: "Hapus semua pengeluaran?",
+      text: "Semua data pengeluaran akan dihapus permanen.",
+      showCancelButton: true,
+      confirmButtonText: "Hapus Semua",
+      cancelButtonText: "Batal",
+    });
+
+    if (!result.isConfirmed) return;
+
+    try {
+      await expenseService.deleteAll();
+      await Swal.fire({
+        icon: "success",
+        title: "Berhasil",
+        text: "Semua pengeluaran berhasil dihapus.",
+      });
+      setPage(1);
+      fetchExpenses();
+    } catch (error) {
+      console.error(error);
+      await Swal.fire({
+        icon: "error",
+        title: "Gagal",
+        text: "Tidak bisa menghapus semua pengeluaran.",
+      });
+    }
+  };
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "2rem" }}>
       <header
@@ -145,6 +185,8 @@ const Expenses = () => {
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
+          gap: "1rem",
+          flexWrap: "wrap",
         }}
       >
         <div>
@@ -155,10 +197,55 @@ const Expenses = () => {
             Catat pengeluaran rutin dan tidak rutin kas RT.
           </p>
         </div>
-        <button className="btn btn-primary" onClick={() => setShowModal(true)}>
-          <Plus size={20} />
-          Catat Pengeluaran
-        </button>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "0.75rem",
+            flexWrap: "wrap",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "0.5rem",
+              minWidth: "240px",
+              flex: "1",
+            }}
+          >
+            <Search size={18} style={{ color: "var(--text-secondary)" }} />
+            <input
+              type="text"
+              placeholder="Cari judul / kategori / keterangan..."
+              value={searchTerm}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                setPage(1);
+              }}
+              style={{ width: "100%" }}
+            />
+          </div>
+
+          <button
+            className="btn btn-outline"
+            style={{ color: "var(--danger)" }}
+            onClick={handleDeleteAll}
+            disabled={loading || total === 0}
+            title="Hapus semua data pengeluaran"
+          >
+            <Trash2 size={18} />
+            Hapus Semua
+          </button>
+
+          <button
+            className="btn btn-primary"
+            onClick={() => setShowModal(true)}
+          >
+            <Plus size={20} />
+            Catat Pengeluaran
+          </button>
+        </div>
       </header>
 
       <div className="glass-card">
