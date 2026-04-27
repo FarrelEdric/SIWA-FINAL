@@ -64,13 +64,9 @@ const Navbar = () => {
         justifyContent: "space-between",
         alignItems: "center",
         padding: "1rem 2rem",
-        ...(isDashboard
-          ? {
-              backgroundImage: `linear-gradient(rgba(255,255,255,0.82), rgba(255,255,255,0.82)), url(${perumahanImage})`,
-              backgroundSize: "cover",
-              backgroundPosition: "center",
-            }
-          : null),
+        backgroundImage: `linear-gradient(rgba(255,255,255,0.82), rgba(255,255,255,0.82)), url(${perumahanImage})`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
       }}
     >
       <h1

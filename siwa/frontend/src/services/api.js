@@ -49,6 +49,8 @@ export const paymentService = {
   getAll: (params) => api.get("/payments", { params }),
   create: (data) => api.post("/payments", data),
   calculate: (data) => api.get("/payments/calculate", { params: data }),
+  delete: (id) => api.delete(`/payments/${id}`),
+  deleteBulk: (ids) => api.delete("/payments", { data: { ids } }),
 };
 
 export const expenseService = {

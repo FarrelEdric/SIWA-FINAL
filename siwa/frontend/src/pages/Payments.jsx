@@ -22,11 +22,34 @@ const Payments = () => {
     payment_period_start: "",
     payment_period_end: "",
   });
+  const [selectedIds, setSelectedIds] = useState([]);
 
   useEffect(() => {
     fetchHouses();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    if (formData.house_id && formData.payment_type) {
+      calculateAmount();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formData.house_id, formData.payment_type]);
+
+  const calculateAmount = async () => {
+    try {
+      const res = await paymentService.calculate({
+        house_id: formData.house_id,
+        payment_type: formData.payment_type,
+      });
+      setFormData((prev) => ({
+        ...prev,
+        amount: res.data.amount,
+      }));
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   useEffect(() => {
     fetchPayments();
@@ -103,28 +126,93 @@ const Payments = () => {
     }
   };
 
-  const handleHouseChange = async (houseId) => {
+  const handleHouseChange = (houseId) => {
     const house = houses.find((h) => h.id == houseId);
     if (house) {
+      setFormData({
+        ...formData,
+        house_id: houseId,
+        resident_id: house.current_resident.id,
+      });
+    } else {
+      setFormData({
+        ...formData,
+        house_id: "",
+        resident_id: "",
+        amount: 0,
+      });
+    }
+  };
+
+  const handleDeleteSelected = async () => {
+    if (selectedIds.length === 0) return;
+
+    const result = await Swal.fire({
+      title: "Hapus Terpilih?",
+      text: `Anda akan menghapus ${selectedIds.length} data pembayaran.`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "var(--danger)",
+      confirmButtonText: "Ya, Hapus!",
+      cancelButtonText: "Batal",
+    });
+
+    if (result.isConfirmed) {
       try {
-        const res = await paymentService.calculate({
-          house_id: houseId,
-          payment_type: formData.payment_type,
-        });
-        setFormData({
-          ...formData,
-          house_id: houseId,
-          resident_id: house.current_resident.id,
-          amount: res.data.amount,
-        });
+        setLoading(true);
+        await paymentService.deleteBulk(selectedIds);
+        await Swal.fire("Berhasil", "Data telah dihapus.", "success");
+        setSelectedIds([]);
+        fetchPayments();
       } catch (error) {
         console.error(error);
-        await Swal.fire({
-          icon: "error",
-          title: "Gagal",
-          text: "Tidak bisa menghitung tagihan.",
-        });
+        await Swal.fire("Gagal", "Tidak bisa menghapus data.", "error");
+      } finally {
+        setLoading(false);
       }
+    }
+  };
+
+  const handleDeleteAll = async () => {
+    const result = await Swal.fire({
+      title: "Hapus Semua?",
+      text: "Seluruh data pembayaran akan dihapus permanen!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "var(--danger)",
+      confirmButtonText: "Ya, Hapus Semua!",
+      cancelButtonText: "Batal",
+    });
+
+    if (result.isConfirmed) {
+      try {
+        setLoading(true);
+        await paymentService.deleteBulk("all");
+        await Swal.fire("Berhasil", "Semua data telah dihapus.", "success");
+        setSelectedIds([]);
+        fetchPayments();
+      } catch (error) {
+        console.error(error);
+        await Swal.fire("Gagal", "Tidak bisa menghapus data.", "error");
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedIds.length === payments.length) {
+      setSelectedIds([]);
+    } else {
+      setSelectedIds(payments.map((p) => p.id));
+    }
+  };
+
+  const toggleSelect = (id) => {
+    if (selectedIds.includes(id)) {
+      setSelectedIds(selectedIds.filter((item) => item !== id));
+    } else {
+      setSelectedIds([...selectedIds, id]);
     }
   };
 
@@ -218,6 +306,24 @@ const Payments = () => {
             <CreditCard size={20} />
             Input Pembayaran
           </button>
+          
+          <button
+            className="btn btn-outline"
+            style={{ color: "var(--danger)", borderColor: "var(--danger)" }}
+            onClick={handleDeleteSelected}
+            disabled={selectedIds.length === 0 || loading}
+          >
+            Hapus Terpilih ({selectedIds.length})
+          </button>
+
+          <button
+            className="btn btn-outline"
+            style={{ background: "var(--danger)", color: "#fff" }}
+            onClick={handleDeleteAll}
+            disabled={loading}
+          >
+            Hapus Semua
+          </button>
         </div>
       </header>
 
@@ -225,6 +331,13 @@ const Payments = () => {
         <table>
           <thead>
             <tr>
+              <th style={{ width: "40px" }}>
+                <input
+                  type="checkbox"
+                  checked={payments.length > 0 && selectedIds.length === payments.length}
+                  onChange={toggleSelectAll}
+                />
+              </th>
               <th>Tanggal Bayar</th>
               <th>Rumah</th>
               <th>Penghuni</th>
@@ -243,6 +356,13 @@ const Payments = () => {
             ) : (
               payments.map((p) => (
                 <tr key={p.id}>
+                  <td>
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.includes(p.id)}
+                      onChange={() => toggleSelect(p.id)}
+                    />
+                  </td>
                   <td>{new Date(p.payment_date).toLocaleDateString()}</td>
                   <td>{p.house.house_number}</td>
                   <td>{p.resident.full_name}</td>

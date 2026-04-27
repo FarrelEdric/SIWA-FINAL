@@ -14,7 +14,8 @@ Route::post('houses/{house}/assign', [HouseController::class, 'assignResident'])
 Route::post('houses/{house}/vacate', [HouseController::class, 'vacate']);
 
 Route::get('payments/calculate', [PaymentController::class, 'calculate']);
-Route::apiResource('payments', PaymentController::class)->only(['index', 'store', 'show']);
+Route::delete('payments', [PaymentController::class, 'destroyBulk']);
+Route::apiResource('payments', PaymentController::class);
 
 Route::delete('expenses', [ExpenseController::class, 'destroyAll']);
 Route::apiResource('expenses', ExpenseController::class);

@@ -69,6 +69,29 @@ class PaymentController extends Controller
         return response()->json($payment->load(['house', 'resident']));
     }
 
+    public function destroy(Payment $payment)
+    {
+        $payment->delete();
+        return response()->json(null, 204);
+    }
+
+    public function destroyBulk(Request $request)
+    {
+        $ids = $request->input('ids');
+
+        if ($ids === 'all') {
+            Payment::truncate();
+            return response()->json(['message' => 'All payments deleted']);
+        }
+
+        if (is_array($ids) && count($ids) > 0) {
+            Payment::whereIn('id', $ids)->delete();
+            return response()->json(['message' => 'Selected payments deleted']);
+        }
+
+        return response()->json(['message' => 'No payments selected'], 400);
+    }
+
     public function calculate(Request $request)
     {
         $validated = $request->validate([
