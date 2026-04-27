@@ -168,11 +168,44 @@ textarea:focus {
   display: none;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
   .mobile-only {
     display: block;
   }
   .desktop-only {
     display: none;
   }
+}
+
+/* Sidebar premium styles */
+.sidebar {
+  width: 280px;
+  background: white;
+  border-right: 1px solid var(--glass-border);
+  display: flex;
+  flex-direction: column;
+  transition: all 0.3s ease;
+  z-index: 1001;
+}
+
+@media (max-width: 1024px) {
+  .sidebar {
+    position: fixed !important;
+    left: -280px;
+    height: 100vh;
+    box-shadow: 10px 0 30px rgba(0, 0, 0, 0.1);
+  }
+  .sidebar.open {
+    left: 0 !important;
+  }
+}
+
+.sidebar-header {
+  height: 80px; /* Aligned with typical navbar height */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1.5rem;
+  border-bottom: 1px solid var(--glass-border);
+  margin-bottom: 1rem;
 }

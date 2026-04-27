@@ -30,7 +30,7 @@ const Payments = () => {
   }, []);
 
   useEffect(() => {
-    if (formData.house_id && formData.payment_type) {
+    if (formData.house_id && formData.payment_type && formData.payment_type !== "lainnya") {
       calculateAmount();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -487,14 +487,31 @@ const Payments = () => {
                 <label>Jenis Iuran</label>
                 <select
                   value={formData.payment_type}
-                  onChange={(e) =>
-                    setFormData({ ...formData, payment_type: e.target.value })
-                  }
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setFormData({ ...formData, payment_type: val, amount: val === "lainnya" ? 0 : formData.amount });
+                  }}
                 >
                   <option value="satpam">Satpam (Rp 100.000)</option>
                   <option value="kebersihan">Kebersihan (Rp 15.000)</option>
+                  <option value="lainnya">Lainnya (Manual)</option>
                 </select>
               </div>
+
+              {formData.payment_type === "lainnya" && (
+                <div>
+                  <label>Masukkan Jumlah (Rp)</label>
+                  <input
+                    type="number"
+                    required
+                    placeholder="Contoh: 50000"
+                    onChange={(e) =>
+                      setFormData({ ...formData, amount: Number(e.target.value) })
+                    }
+                  />
+                </div>
+              )}
+
               <div
                 style={{
                   display: "grid",
@@ -535,9 +552,14 @@ const Payments = () => {
                 <label>Total Bayar (Otomatis)</label>
                 <input
                   type="number"
-                  readOnly
+                  readOnly={formData.payment_type !== "lainnya"}
                   value={formData.amount}
-                  style={{ background: "var(--surface-muted)" }}
+                  style={{ background: formData.payment_type === "lainnya" ? "#fff" : "var(--surface-muted)" }}
+                  onChange={(e) => {
+                    if (formData.payment_type === "lainnya") {
+                      setFormData({ ...formData, amount: Number(e.target.value) });
+                    }
+                  }}
                 />
               </div>
               <div style={{ display: "flex", gap: "1rem", marginTop: "1rem" }}>

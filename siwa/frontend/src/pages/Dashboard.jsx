@@ -142,7 +142,7 @@ const Dashboard = () => {
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+          gridTemplateColumns: "repeat(auto-fit, minmax(400px, 1fr))",
           gap: "1.5rem",
         }}
       >
@@ -168,7 +168,7 @@ const Dashboard = () => {
                         {item.payment_type}
                       </span>
                     </td>
-                    <td>Rp {item.amount.toLocaleString()}</td>
+                    <td>Rp {Math.floor(item.amount).toLocaleString("id-ID")}</td>
                   </tr>
                 ))}
               </tbody>
@@ -197,7 +197,7 @@ const Dashboard = () => {
                     <td>
                       <span className="badge badge-warning">{item.category}</span>
                     </td>
-                    <td>Rp {item.amount.toLocaleString()}</td>
+                    <td>Rp {Math.floor(item.amount).toLocaleString("id-ID")}</td>
                   </tr>
                 ))}
               </tbody>

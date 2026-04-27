@@ -125,29 +125,15 @@ function App() {
         )}
 
         {/* Sidebar */}
-        <aside
-          style={{
-            width: "280px",
-            padding: "1rem",
-            borderRight: "1px solid var(--glass-border)",
-            display: "flex",
-            flexDirection: "column",
-            gap: "0.5rem",
-            background: "var(--bg-gradient)",
-            transition: "all 0.3s",
-            zIndex: 1001,
-            position: window.innerWidth <= 768 ? "fixed" : "static",
-            left: sidebarOpen ? 0 : "-280px",
-            height: "100vh",
-          }}
-        >
-          <div style={{ padding: "1rem", marginBottom: "1rem", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <aside className={`sidebar ${sidebarOpen ? "open" : ""}`}>
+          <div className="sidebar-header">
             <h2
               style={{
                 fontSize: "0.875rem",
                 color: "var(--text-secondary)",
                 textTransform: "uppercase",
                 letterSpacing: "0.1em",
+                margin: 0,
               }}
             >
               Menu Utama
@@ -155,26 +141,29 @@ function App() {
             <button 
               className="mobile-only" 
               onClick={() => setSidebarOpen(false)}
-              style={{ background: "none", border: "none", color: "var(--text-secondary)", cursor: "pointer" }}
+              style={{ background: "none", border: "none", color: "var(--text-secondary)", cursor: "pointer", display: "flex", alignItems: "center" }}
             >
               <X size={24} />
             </button>
           </div>
-          <SidebarLink to="/" icon={LayoutDashboard} onClick={() => setSidebarOpen(false)}>
-            Dashboard
-          </SidebarLink>
-          <SidebarLink to="/residents" icon={Users} onClick={() => setSidebarOpen(false)}>
-            Penghuni
-          </SidebarLink>
-          <SidebarLink to="/houses" icon={Home} onClick={() => setSidebarOpen(false)}>
-            Rumah
-          </SidebarLink>
-          <SidebarLink to="/payments" icon={CreditCard} onClick={() => setSidebarOpen(false)}>
-            Pembayaran
-          </SidebarLink>
-          <SidebarLink to="/expenses" icon={Receipt} onClick={() => setSidebarOpen(false)}>
-            Pengeluaran
-          </SidebarLink>
+          
+          <div style={{ padding: "0 1rem", display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+            <SidebarLink to="/" icon={LayoutDashboard} onClick={() => setSidebarOpen(false)}>
+              Dashboard
+            </SidebarLink>
+            <SidebarLink to="/residents" icon={Users} onClick={() => setSidebarOpen(false)}>
+              Penghuni
+            </SidebarLink>
+            <SidebarLink to="/houses" icon={Home} onClick={() => setSidebarOpen(false)}>
+              Rumah
+            </SidebarLink>
+            <SidebarLink to="/payments" icon={CreditCard} onClick={() => setSidebarOpen(false)}>
+              Pembayaran
+            </SidebarLink>
+            <SidebarLink to="/expenses" icon={Receipt} onClick={() => setSidebarOpen(false)}>
+              Pengeluaran
+            </SidebarLink>
+          </div>
         </aside>
 
         {/* Main Content */}
@@ -186,8 +175,9 @@ function App() {
               display: "flex",
               justifyContent: "space-between",
               alignItems: "center",
-              padding: "1rem 2rem",
-              backgroundImage: `linear-gradient(rgba(255,255,255,0.82), rgba(255,255,255,0.82)), url(${perumahanImage})`,
+              height: "80px", // Aligned with sidebar header
+              padding: "0 2rem",
+              backgroundImage: `linear-gradient(rgba(255,255,255,0.85), rgba(255,255,255,0.85)), url(${perumahanImage})`,
               backgroundSize: "cover",
               backgroundPosition: "center",
             }}
@@ -204,6 +194,7 @@ function App() {
                 style={{
                   fontSize: "1.5rem",
                   fontWeight: "800",
+                  margin: 0,
                   background:
                     "linear-gradient(to right, var(--primary), var(--secondary))",
                   WebkitBackgroundClip: "text",
@@ -223,8 +214,8 @@ function App() {
                   color: "#fff",
                   display: "flex",
                   alignItems: "center",
-                  justifyItems: "center",
                   justifyContent: "center",
+                  fontWeight: "700",
                 }}
               >
                 RT
@@ -232,7 +223,7 @@ function App() {
             </div>
           </nav>
 
-          <div style={{ padding: window.innerWidth <= 768 ? "1rem" : "2rem", flex: 1 }}>
+          <div className="main-content-wrapper" style={{ padding: "2rem", flex: 1 }}>
             <Routes>
               <Route path="/" element={<Dashboard />} />
               <Route path="/residents" element={<Residents />} />
@@ -244,10 +235,13 @@ function App() {
         </main>
       </div>
       <style>{`
-        @media (max-width: 768px) {
-          aside {
-            position: fixed !important;
-            box-shadow: 10px 0 30px rgba(0,0,0,0.1);
+        @media (max-width: 1024px) {
+          .main-content-wrapper {
+            padding: 1rem !important;
+          }
+          nav {
+            margin: 0.5rem !important;
+            padding: 0 1rem !important;
           }
         }
       `}</style>
