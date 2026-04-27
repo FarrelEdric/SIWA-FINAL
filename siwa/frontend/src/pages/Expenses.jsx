@@ -1,10 +1,17 @@
 import React, { useEffect, useState } from "react";
 import { expenseService } from "../services/api";
 import { Receipt, Plus, Trash2 } from "lucide-react";
+import Swal from "sweetalert2";
 
 const Expenses = () => {
   const [expenses, setExpenses] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [perPage, setPerPage] = useState(10);
+  const [lastPage, setLastPage] = useState(1);
+  const [total, setTotal] = useState(0);
   const [showModal, setShowModal] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     title: "",
     amount: "",
@@ -16,21 +23,118 @@ const Expenses = () => {
 
   useEffect(() => {
     fetchExpenses();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, perPage]);
+
+  const normalizeListResponse = (payload) => {
+    if (Array.isArray(payload)) {
+      return {
+        items: payload,
+        meta: {
+          currentPage: 1,
+          lastPage: 1,
+          perPage: payload.length,
+          total: payload.length,
+        },
+      };
+    }
+
+    if (payload && Array.isArray(payload.data)) {
+      return {
+        items: payload.data,
+        meta: {
+          currentPage: payload.current_page ?? 1,
+          lastPage: payload.last_page ?? 1,
+          perPage: payload.per_page ?? payload.data.length,
+          total: payload.total ?? payload.data.length,
+        },
+      };
+    }
+
+    return {
+      items: [],
+      meta: { currentPage: 1, lastPage: 1, perPage: perPage, total: 0 },
+    };
+  };
 
   const fetchExpenses = async () => {
-    const res = await expenseService.getAll();
-    setExpenses(res.data);
+    try {
+      setLoading(true);
+      const res = await expenseService.getAll({ page, per_page: perPage });
+      const { items, meta } = normalizeListResponse(res.data);
+      setExpenses(items);
+      setPage(meta.currentPage);
+      setLastPage(meta.lastPage);
+      setTotal(meta.total);
+    } catch (error) {
+      console.error(error);
+      await Swal.fire({
+        icon: "error",
+        title: "Gagal",
+        text: "Tidak bisa mengambil data pengeluaran.",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (submitting) return;
     try {
+      setSubmitting(true);
       await expenseService.create(formData);
-      fetchExpenses();
+      await Swal.fire({
+        icon: "success",
+        title: "Berhasil",
+        text: "Pengeluaran berhasil dicatat.",
+      });
       setShowModal(false);
+      const res = await expenseService.getAll({ page: 1, per_page: perPage });
+      const { items, meta } = normalizeListResponse(res.data);
+      setExpenses(items);
+      setPage(meta.currentPage);
+      setLastPage(meta.lastPage);
+      setTotal(meta.total);
     } catch (error) {
       console.error(error);
+      await Swal.fire({
+        icon: "error",
+        title: "Gagal",
+        text: "Tidak bisa menyimpan pengeluaran.",
+      });
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleDelete = async (id) => {
+    const result = await Swal.fire({
+      icon: "warning",
+      title: "Hapus pengeluaran?",
+      text: "Data ini akan dihapus permanen.",
+      showCancelButton: true,
+      confirmButtonText: "Hapus",
+      cancelButtonText: "Batal",
+    });
+
+    if (!result.isConfirmed) return;
+
+    try {
+      await expenseService.delete(id);
+      await Swal.fire({
+        icon: "success",
+        title: "Berhasil",
+        text: "Pengeluaran berhasil dihapus.",
+      });
+      fetchExpenses();
+    } catch (error) {
+      console.error(error);
+      await Swal.fire({
+        icon: "error",
+        title: "Gagal",
+        text: "Tidak bisa menghapus pengeluaran.",
+      });
     }
   };
 
@@ -70,27 +174,92 @@ const Expenses = () => {
             </tr>
           </thead>
           <tbody>
-            {expenses.map((e) => (
-              <tr key={e.id}>
-                <td>{new Date(e.expense_date).toLocaleDateString()}</td>
-                <td>{e.title}</td>
-                <td>
-                  <span className="badge badge-warning">{e.category}</span>
-                </td>
-                <td>Rp {parseFloat(e.amount).toLocaleString()}</td>
-                <td>{e.recurring ? "Rutin" : "Sekali"}</td>
-                <td>
-                  <button
-                    className="btn btn-outline"
-                    style={{ padding: "0.5rem", color: "var(--danger)" }}
-                  >
-                    <Trash2 size={16} />
-                  </button>
+            {loading ? (
+              <tr>
+                <td colSpan={6} style={{ color: "var(--text-secondary)" }}>
+                  Loading...
                 </td>
               </tr>
-            ))}
+            ) : (
+              expenses.map((e) => (
+                <tr key={e.id}>
+                  <td>{new Date(e.expense_date).toLocaleDateString()}</td>
+                  <td>{e.title}</td>
+                  <td>
+                    <span className="badge badge-warning">{e.category}</span>
+                  </td>
+                  <td>Rp {parseFloat(e.amount).toLocaleString()}</td>
+                  <td>{e.recurring ? "Rutin" : "Sekali"}</td>
+                  <td>
+                    <button
+                      className="btn btn-outline"
+                      style={{ padding: "0.5rem", color: "var(--danger)" }}
+                      onClick={() => handleDelete(e.id)}
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
+
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            gap: "1rem",
+            flexWrap: "wrap",
+            marginTop: "1rem",
+          }}
+        >
+          <div style={{ color: "var(--text-secondary)", fontSize: "0.875rem" }}>
+            Total: {total}
+          </div>
+
+          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+            <button
+              className="btn btn-outline"
+              disabled={page <= 1 || loading}
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+            >
+              Prev
+            </button>
+            <div
+              style={{ color: "var(--text-secondary)", fontSize: "0.875rem" }}
+            >
+              Page {page} / {lastPage}
+            </div>
+            <button
+              className="btn btn-outline"
+              disabled={page >= lastPage || loading}
+              onClick={() => setPage((p) => Math.min(lastPage, p + 1))}
+            >
+              Next
+            </button>
+          </div>
+
+          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+            <span
+              style={{ color: "var(--text-secondary)", fontSize: "0.875rem" }}
+            >
+              Per page
+            </span>
+            <select
+              value={perPage}
+              onChange={(e) => {
+                setPerPage(Number(e.target.value));
+                setPage(1);
+              }}
+            >
+              <option value={10}>10</option>
+              <option value={25}>25</option>
+              <option value={50}>50</option>
+            </select>
+          </div>
+        </div>
       </div>
 
       {showModal && (
@@ -197,8 +366,9 @@ const Expenses = () => {
                   type="submit"
                   className="btn btn-primary"
                   style={{ flex: 1 }}
+                  disabled={submitting}
                 >
-                  Simpan
+                  {submitting ? "Menyimpan..." : "Simpan"}
                 </button>
                 <button
                   type="button"

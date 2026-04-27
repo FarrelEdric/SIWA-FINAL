@@ -7,9 +7,21 @@ use Illuminate\Http\Request;
 
 class ExpenseController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        return response()->json(Expense::all());
+        // Backward compatible: without pagination params, return full list.
+        if (!$request->has('page') && !$request->has('per_page')) {
+            return response()->json(Expense::all());
+        }
+
+        $perPage = (int) $request->query('per_page', 10);
+        $perPage = max(1, min($perPage, 100));
+
+        return response()->json(
+            Expense::query()
+                ->orderByDesc('id')
+                ->paginate($perPage)
+        );
     }
 
     public function store(Request $request)
@@ -24,7 +36,7 @@ class ExpenseController extends Controller
         ]);
 
         $expense = Expense::create($validated);
-        return response()->json($expense, 21);
+        return response()->json($expense, 201);
     }
 
     public function show(Expense $expense)
@@ -50,6 +62,6 @@ class ExpenseController extends Controller
     public function destroy(Expense $expense)
     {
         $expense->delete();
-        return response()->json(null, 24);
+        return response()->json(null, 204);
     }
 }

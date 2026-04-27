@@ -1,11 +1,18 @@
 import React, { useEffect, useState } from "react";
 import { residentService } from "../services/api";
 import { Plus, Edit2, Trash2, Phone, User as UserIcon } from "lucide-react";
+import Swal from "sweetalert2";
 
 const Residents = () => {
   const [residents, setResidents] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [perPage, setPerPage] = useState(10);
+  const [lastPage, setLastPage] = useState(1);
+  const [total, setTotal] = useState(0);
   const [showModal, setShowModal] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [editingResident, setEditingResident] = useState(null);
   const [formData, setFormData] = useState({
     full_name: "",
     resident_status: "tetap",
@@ -14,16 +21,90 @@ const Residents = () => {
     ktp_photo: null,
   });
 
+  const emptyForm = {
+    full_name: "",
+    resident_status: "tetap",
+    phone_number: "",
+    marital_status: "belum",
+    ktp_photo: null,
+  };
+
+  const openCreateModal = () => {
+    setEditingResident(null);
+    setFormData(emptyForm);
+    setShowModal(true);
+  };
+
+  const openEditModal = (resident) => {
+    setEditingResident(resident);
+    setFormData({
+      full_name: resident.full_name ?? "",
+      resident_status: resident.resident_status ?? "tetap",
+      phone_number: resident.phone_number ?? "",
+      marital_status: resident.marital_status ?? "belum",
+      ktp_photo: null,
+    });
+    setShowModal(true);
+  };
+
+  const closeModal = () => {
+    setShowModal(false);
+    setEditingResident(null);
+    setFormData(emptyForm);
+  };
+
   useEffect(() => {
     fetchResidents();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, perPage]);
+
+  const normalizeListResponse = (payload) => {
+    if (Array.isArray(payload)) {
+      return {
+        items: payload,
+        meta: {
+          currentPage: 1,
+          lastPage: 1,
+          perPage: payload.length,
+          total: payload.length,
+        },
+      };
+    }
+
+    if (payload && Array.isArray(payload.data)) {
+      return {
+        items: payload.data,
+        meta: {
+          currentPage: payload.current_page ?? 1,
+          lastPage: payload.last_page ?? 1,
+          perPage: payload.per_page ?? payload.data.length,
+          total: payload.total ?? payload.data.length,
+        },
+      };
+    }
+
+    return {
+      items: [],
+      meta: { currentPage: 1, lastPage: 1, perPage: perPage, total: 0 },
+    };
+  };
 
   const fetchResidents = async () => {
     try {
-      const res = await residentService.getAll();
-      setResidents(res.data);
+      setLoading(true);
+      const res = await residentService.getAll({ page, per_page: perPage });
+      const { items, meta } = normalizeListResponse(res.data);
+      setResidents(items);
+      setPage(meta.currentPage);
+      setLastPage(meta.lastPage);
+      setTotal(meta.total);
     } catch (error) {
       console.error(error);
+      await Swal.fire({
+        icon: "error",
+        title: "Gagal",
+        text: "Tidak bisa mengambil data penghuni.",
+      });
     } finally {
       setLoading(false);
     }
@@ -31,30 +112,106 @@ const Residents = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (submitting) return;
     try {
-      await residentService.create(formData);
-      fetchResidents();
-      setShowModal(false);
-      setFormData({
-        full_name: "",
-        resident_status: "tetap",
-        phone_number: "",
-        marital_status: "belum",
-        ktp_photo: null,
-      });
+      setSubmitting(true);
+      if (editingResident?.id) {
+        await residentService.update(editingResident.id, formData);
+        await Swal.fire({
+          icon: "success",
+          title: "Berhasil",
+          text: "Data penghuni berhasil diperbarui.",
+        });
+      } else {
+        await residentService.create(formData);
+        await Swal.fire({
+          icon: "success",
+          title: "Berhasil",
+          text: "Penghuni berhasil ditambahkan.",
+        });
+      }
+
+      closeModal();
+      // Refresh first page so new data is visible and avoid perceived duplicates.
+      await residentService
+        .getAll({ page: 1, per_page: perPage })
+        .then((res) => {
+          const { items, meta } = normalizeListResponse(res.data);
+          setResidents(items);
+          setPage(meta.currentPage);
+          setLastPage(meta.lastPage);
+          setTotal(meta.total);
+        });
     } catch (error) {
       console.error(error);
+      await Swal.fire({
+        icon: "error",
+        title: "Gagal",
+        text: "Aksi tidak berhasil. Coba lagi.",
+      });
+    } finally {
+      setSubmitting(false);
     }
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm("Hapus penghuni ini?")) {
-      try {
-        await residentService.delete(id);
-        fetchResidents();
-      } catch (error) {
-        console.error(error);
-      }
+    const result = await Swal.fire({
+      icon: "warning",
+      title: "Hapus penghuni?",
+      text: "Data ini akan dihapus permanen.",
+      showCancelButton: true,
+      confirmButtonText: "Hapus",
+      cancelButtonText: "Batal",
+    });
+
+    if (!result.isConfirmed) return;
+
+    try {
+      await residentService.delete(id);
+      await Swal.fire({
+        icon: "success",
+        title: "Berhasil",
+        text: "Penghuni berhasil dihapus.",
+      });
+      fetchResidents();
+    } catch (error) {
+      console.error(error);
+      await Swal.fire({
+        icon: "error",
+        title: "Gagal",
+        text: "Tidak bisa menghapus penghuni.",
+      });
+    }
+  };
+
+  const handleDeleteAll = async () => {
+    const result = await Swal.fire({
+      icon: "warning",
+      title: "Hapus semua penghuni?",
+      text: "Semua data penghuni akan dihapus permanen.",
+      showCancelButton: true,
+      confirmButtonText: "Hapus Semua",
+      cancelButtonText: "Batal",
+    });
+
+    if (!result.isConfirmed) return;
+
+    try {
+      await residentService.deleteAll();
+      await Swal.fire({
+        icon: "success",
+        title: "Berhasil",
+        text: "Semua penghuni berhasil dihapus.",
+      });
+      setPage(1);
+      fetchResidents();
+    } catch (error) {
+      console.error(error);
+      await Swal.fire({
+        icon: "error",
+        title: "Gagal",
+        text: "Tidak bisa menghapus semua penghuni.",
+      });
     }
   };
 
@@ -75,10 +232,22 @@ const Residents = () => {
             Kelola data seluruh warga perumahan.
           </p>
         </div>
-        <button className="btn btn-primary" onClick={() => setShowModal(true)}>
-          <Plus size={20} />
-          Tambah Penghuni
-        </button>
+        <div style={{ display: "flex", gap: "0.75rem" }}>
+          <button
+            className="btn btn-outline"
+            style={{ color: "var(--danger)" }}
+            onClick={handleDeleteAll}
+            disabled={loading || total === 0}
+            title="Hapus semua data penghuni"
+          >
+            <Trash2 size={18} />
+            Hapus Semua
+          </button>
+          <button className="btn btn-primary" onClick={openCreateModal}>
+            <Plus size={20} />
+            Tambah Penghuni
+          </button>
+        </div>
       </header>
 
       <div className="glass-card">
@@ -93,58 +262,125 @@ const Residents = () => {
             </tr>
           </thead>
           <tbody>
-            {residents.map((r) => (
-              <tr key={r.id}>
-                <td
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "0.75rem",
-                  }}
-                >
-                  <div
-                    style={{
-                      width: "32px",
-                      height: "32px",
-                      background: "var(--surface-muted)",
-                      borderRadius: "50%",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                  >
-                    <UserIcon size={16} />
-                  </div>
-                  {r.full_name}
-                </td>
-                <td>
-                  <span
-                    className={`badge ${r.resident_status === "tetap" ? "badge-success" : "badge-warning"}`}
-                  >
-                    {r.resident_status === "tetap" ? "Tetap" : "Kontrak"}
-                  </span>
-                </td>
-                <td>{r.phone_number}</td>
-                <td>{r.marital_status === "menikah" ? "Menikah" : "Belum"}</td>
-                <td style={{ display: "flex", gap: "0.5rem" }}>
-                  <button
-                    className="btn btn-outline"
-                    style={{ padding: "0.5rem" }}
-                  >
-                    <Edit2 size={16} />
-                  </button>
-                  <button
-                    className="btn btn-outline"
-                    style={{ padding: "0.5rem", color: "var(--danger)" }}
-                    onClick={() => handleDelete(r.id)}
-                  >
-                    <Trash2 size={16} />
-                  </button>
+            {loading ? (
+              <tr>
+                <td colSpan={5} style={{ color: "var(--text-secondary)" }}>
+                  Loading...
                 </td>
               </tr>
-            ))}
+            ) : (
+              residents.map((r) => (
+                <tr key={r.id}>
+                  <td
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "0.75rem",
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: "32px",
+                        height: "32px",
+                        background: "var(--surface-muted)",
+                        borderRadius: "50%",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      <UserIcon size={16} />
+                    </div>
+                    {r.full_name}
+                  </td>
+                  <td>
+                    <span
+                      className={`badge ${r.resident_status === "tetap" ? "badge-success" : "badge-warning"}`}
+                    >
+                      {r.resident_status === "tetap" ? "Tetap" : "Kontrak"}
+                    </span>
+                  </td>
+                  <td>{r.phone_number}</td>
+                  <td>
+                    {r.marital_status === "menikah" ? "Menikah" : "Belum"}
+                  </td>
+                  <td style={{ display: "flex", gap: "0.5rem" }}>
+                    <button
+                      className="btn btn-outline"
+                      style={{ padding: "0.5rem" }}
+                      onClick={() => openEditModal(r)}
+                    >
+                      <Edit2 size={16} />
+                    </button>
+                    <button
+                      className="btn btn-outline"
+                      style={{ padding: "0.5rem", color: "var(--danger)" }}
+                      onClick={() => handleDelete(r.id)}
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
+
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            gap: "1rem",
+            flexWrap: "wrap",
+            marginTop: "1rem",
+          }}
+        >
+          <div style={{ color: "var(--text-secondary)", fontSize: "0.875rem" }}>
+            Total: {total}
+          </div>
+
+          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+            <button
+              className="btn btn-outline"
+              disabled={page <= 1 || loading}
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+            >
+              Prev
+            </button>
+            <div
+              style={{ color: "var(--text-secondary)", fontSize: "0.875rem" }}
+            >
+              Page {page} / {lastPage}
+            </div>
+            <button
+              className="btn btn-outline"
+              disabled={page >= lastPage || loading}
+              onClick={() => setPage((p) => Math.min(lastPage, p + 1))}
+            >
+              Next
+            </button>
+          </div>
+
+          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+            <span
+              style={{ color: "var(--text-secondary)", fontSize: "0.875rem" }}
+            >
+              Per page
+            </span>
+            <select
+              value={perPage}
+              onChange={(e) => {
+                setPerPage(Number(e.target.value));
+                setPage(1);
+              }}
+            >
+              <option value={10}>10</option>
+              <option value={25}>25</option>
+              <option value={50}>50</option>
+            </select>
+          </div>
+        </div>
       </div>
 
       {showModal && (
@@ -163,7 +399,9 @@ const Residents = () => {
             className="glass-card"
             style={{ width: "500px", background: "var(--glass-bg)" }}
           >
-            <h2 style={{ marginBottom: "1.5rem" }}>Tambah Penghuni Baru</h2>
+            <h2 style={{ marginBottom: "1.5rem" }}>
+              {editingResident ? "Edit Penghuni" : "Tambah Penghuni Baru"}
+            </h2>
             <form
               onSubmit={handleSubmit}
               style={{ display: "flex", flexDirection: "column", gap: "1rem" }}
@@ -236,20 +474,36 @@ const Residents = () => {
                     setFormData({ ...formData, ktp_photo: e.target.files[0] })
                   }
                 />
+                {editingResident ? (
+                  <p
+                    style={{
+                      marginTop: "0.5rem",
+                      fontSize: "0.875rem",
+                      color: "var(--text-secondary)",
+                    }}
+                  >
+                    Kosongkan jika tidak mengganti foto.
+                  </p>
+                ) : null}
               </div>
               <div style={{ display: "flex", gap: "1rem", marginTop: "1rem" }}>
                 <button
                   type="submit"
                   className="btn btn-primary"
                   style={{ flex: 1 }}
+                  disabled={submitting}
                 >
-                  Simpan
+                  {submitting
+                    ? "Menyimpan..."
+                    : editingResident
+                      ? "Simpan Perubahan"
+                      : "Simpan"}
                 </button>
                 <button
                   type="button"
                   className="btn btn-outline"
                   style={{ flex: 1 }}
-                  onClick={() => setShowModal(false)}
+                  onClick={closeModal}
                 >
                   Batal
                 </button>

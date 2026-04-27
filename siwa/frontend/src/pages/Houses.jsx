@@ -1,9 +1,15 @@
 import React, { useEffect, useState } from "react";
 import { houseService, residentService } from "../services/api";
 import { Home, UserPlus, UserMinus, History } from "lucide-react";
+import Swal from "sweetalert2";
 
 const Houses = () => {
   const [houses, setHouses] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [perPage, setPerPage] = useState(10);
+  const [lastPage, setLastPage] = useState(1);
+  const [total, setTotal] = useState(0);
   const [residents, setResidents] = useState([]);
   const [showAssignModal, setShowAssignModal] = useState(false);
   const [selectedHouse, setSelectedHouse] = useState(null);
@@ -13,13 +19,65 @@ const Houses = () => {
   });
 
   useEffect(() => {
-    fetchHouses();
     fetchResidents();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  useEffect(() => {
+    fetchHouses();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, perPage]);
+
+  const normalizeListResponse = (payload) => {
+    if (Array.isArray(payload)) {
+      return {
+        items: payload,
+        meta: {
+          currentPage: 1,
+          lastPage: 1,
+          perPage: payload.length,
+          total: payload.length,
+        },
+      };
+    }
+
+    if (payload && Array.isArray(payload.data)) {
+      return {
+        items: payload.data,
+        meta: {
+          currentPage: payload.current_page ?? 1,
+          lastPage: payload.last_page ?? 1,
+          perPage: payload.per_page ?? payload.data.length,
+          total: payload.total ?? payload.data.length,
+        },
+      };
+    }
+
+    return {
+      items: [],
+      meta: { currentPage: 1, lastPage: 1, perPage: perPage, total: 0 },
+    };
+  };
+
   const fetchHouses = async () => {
-    const res = await houseService.getAll();
-    setHouses(res.data);
+    try {
+      setLoading(true);
+      const res = await houseService.getAll({ page, per_page: perPage });
+      const { items, meta } = normalizeListResponse(res.data);
+      setHouses(items);
+      setPage(meta.currentPage);
+      setLastPage(meta.lastPage);
+      setTotal(meta.total);
+    } catch (error) {
+      console.error(error);
+      await Swal.fire({
+        icon: "error",
+        title: "Gagal",
+        text: "Tidak bisa mengambil data rumah.",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const fetchResidents = async () => {
@@ -31,25 +89,51 @@ const Houses = () => {
     e.preventDefault();
     try {
       await houseService.assignResident(selectedHouse.id, assignData);
+      await Swal.fire({
+        icon: "success",
+        title: "Berhasil",
+        text: "Penghuni berhasil di-assign.",
+      });
       fetchHouses();
       setShowAssignModal(false);
     } catch (error) {
       console.error(error);
+      await Swal.fire({
+        icon: "error",
+        title: "Gagal",
+        text: "Tidak bisa assign penghuni.",
+      });
     }
   };
 
   const handleVacate = async (house) => {
-    const endDate = prompt(
-      "Masukkan tanggal keluar (YYYY-MM-DD):",
-      new Date().toISOString().split("T")[0],
-    );
-    if (endDate) {
-      try {
-        await houseService.vacate(house.id, { end_date: endDate });
-        fetchHouses();
-      } catch (error) {
-        console.error(error);
-      }
+    const result = await Swal.fire({
+      title: `Vacate Rumah ${house.house_number}`,
+      text: "Masukkan tanggal keluar.",
+      input: "date",
+      inputValue: new Date().toISOString().split("T")[0],
+      showCancelButton: true,
+      confirmButtonText: "Vacate",
+      cancelButtonText: "Batal",
+    });
+
+    if (!result.isConfirmed || !result.value) return;
+
+    try {
+      await houseService.vacate(house.id, { end_date: result.value });
+      await Swal.fire({
+        icon: "success",
+        title: "Berhasil",
+        text: "Rumah berhasil di-vacate.",
+      });
+      fetchHouses();
+    } catch (error) {
+      console.error(error);
+      await Swal.fire({
+        icon: "error",
+        title: "Gagal",
+        text: "Tidak bisa vacate rumah.",
+      });
     }
   };
 
@@ -69,110 +153,169 @@ const Houses = () => {
           gap: "1.5rem",
         }}
       >
-        {houses.map((h) => (
-          <div
-            key={h.id}
-            className="glass-card"
-            style={{ display: "flex", flexDirection: "column", gap: "1rem" }}
-          >
+        {loading ? (
+          <div style={{ color: "var(--text-secondary)" }}>Loading...</div>
+        ) : (
+          houses.map((h) => (
             <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-              }}
+              key={h.id}
+              className="glass-card"
+              style={{ display: "flex", flexDirection: "column", gap: "1rem" }}
             >
               <div
                 style={{
                   display: "flex",
+                  justifyContent: "space-between",
                   alignItems: "center",
-                  gap: "0.75rem",
                 }}
               >
                 <div
                   style={{
-                    padding: "0.5rem",
-                    background: "var(--primary-soft)",
-                    borderRadius: "0.5rem",
-                    color: "var(--primary)",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "0.75rem",
                   }}
                 >
-                  <Home size={20} />
-                </div>
-                <h3 style={{ fontSize: "1.25rem" }}>Rumah {h.house_number}</h3>
-              </div>
-              <span
-                className={`badge ${h.status === "dihuni" ? "badge-success" : "badge-danger"}`}
-              >
-                {h.status === "dihuni" ? "Dihuni" : "Kosong"}
-              </span>
-            </div>
-
-            <div
-              style={{
-                padding: "1rem",
-                background: "var(--surface-muted)",
-                borderRadius: "0.5rem",
-                minHeight: "80px",
-              }}
-            >
-              {h.current_resident ? (
-                <div>
-                  <p
+                  <div
                     style={{
-                      fontSize: "0.75rem",
-                      color: "var(--text-secondary)",
+                      padding: "0.5rem",
+                      background: "var(--primary-soft)",
+                      borderRadius: "0.5rem",
+                      color: "var(--primary)",
                     }}
                   >
-                    PENGHUNI SAAT INI
-                  </p>
-                  <p style={{ fontWeight: "600", marginTop: "0.25rem" }}>
-                    {h.current_resident.full_name}
-                  </p>
+                    <Home size={20} />
+                  </div>
+                  <h3 style={{ fontSize: "1.25rem" }}>
+                    Rumah {h.house_number}
+                  </h3>
                 </div>
-              ) : (
-                <p
-                  style={{
-                    color: "var(--text-secondary)",
-                    fontStyle: "italic",
-                  }}
+                <span
+                  className={`badge ${h.status === "dihuni" ? "badge-success" : "badge-danger"}`}
                 >
-                  Tidak ada penghuni aktif
-                </p>
-              )}
-            </div>
+                  {h.status === "dihuni" ? "Dihuni" : "Kosong"}
+                </span>
+              </div>
 
-            <div style={{ display: "flex", gap: "0.5rem" }}>
-              {h.status === "tidak_dihuni" ? (
-                <button
-                  className="btn btn-primary"
-                  style={{ flex: 1 }}
-                  onClick={() => {
-                    setSelectedHouse(h);
-                    setShowAssignModal(true);
-                  }}
-                >
-                  <UserPlus size={16} /> Assign
-                </button>
-              ) : (
+              <div
+                style={{
+                  padding: "1rem",
+                  background: "var(--surface-muted)",
+                  borderRadius: "0.5rem",
+                  minHeight: "80px",
+                }}
+              >
+                {h.current_resident ? (
+                  <div>
+                    <p
+                      style={{
+                        fontSize: "0.75rem",
+                        color: "var(--text-secondary)",
+                      }}
+                    >
+                      PENGHUNI SAAT INI
+                    </p>
+                    <p style={{ fontWeight: "600", marginTop: "0.25rem" }}>
+                      {h.current_resident.full_name}
+                    </p>
+                  </div>
+                ) : (
+                  <p
+                    style={{
+                      color: "var(--text-secondary)",
+                      fontStyle: "italic",
+                    }}
+                  >
+                    Tidak ada penghuni aktif
+                  </p>
+                )}
+              </div>
+
+              <div style={{ display: "flex", gap: "0.5rem" }}>
+                {h.status === "tidak_dihuni" ? (
+                  <button
+                    className="btn btn-primary"
+                    style={{ flex: 1 }}
+                    onClick={() => {
+                      setSelectedHouse(h);
+                      setShowAssignModal(true);
+                    }}
+                  >
+                    <UserPlus size={16} /> Assign
+                  </button>
+                ) : (
+                  <button
+                    className="btn btn-outline"
+                    style={{ flex: 1, color: "var(--danger)" }}
+                    onClick={() => handleVacate(h)}
+                  >
+                    <UserMinus size={16} /> Vacate
+                  </button>
+                )}
                 <button
                   className="btn btn-outline"
-                  style={{ flex: 1, color: "var(--danger)" }}
-                  onClick={() => handleVacate(h)}
+                  style={{ flex: 0.5 }}
+                  title="History"
                 >
-                  <UserMinus size={16} /> Vacate
+                  <History size={16} />
                 </button>
-              )}
-              <button
-                className="btn btn-outline"
-                style={{ flex: 0.5 }}
-                title="History"
-              >
-                <History size={16} />
-              </button>
+              </div>
             </div>
+          ))
+        )}
+      </div>
+
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          gap: "1rem",
+          flexWrap: "wrap",
+        }}
+      >
+        <div style={{ color: "var(--text-secondary)", fontSize: "0.875rem" }}>
+          Total: {total}
+        </div>
+
+        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+          <button
+            className="btn btn-outline"
+            disabled={page <= 1 || loading}
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+          >
+            Prev
+          </button>
+          <div style={{ color: "var(--text-secondary)", fontSize: "0.875rem" }}>
+            Page {page} / {lastPage}
           </div>
-        ))}
+          <button
+            className="btn btn-outline"
+            disabled={page >= lastPage || loading}
+            onClick={() => setPage((p) => Math.min(lastPage, p + 1))}
+          >
+            Next
+          </button>
+        </div>
+
+        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+          <span
+            style={{ color: "var(--text-secondary)", fontSize: "0.875rem" }}
+          >
+            Per page
+          </span>
+          <select
+            value={perPage}
+            onChange={(e) => {
+              setPerPage(Number(e.target.value));
+              setPage(1);
+            }}
+          >
+            <option value={6}>6</option>
+            <option value={12}>12</option>
+            <option value={24}>24</option>
+          </select>
+        </div>
       </div>
 
       {showAssignModal && (

@@ -15,9 +15,21 @@ class HouseController extends Controller
         $this->occupancyService = $occupancyService;
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        return response()->json(House::with(['currentResident', 'occupancyHistories.resident'])->get());
+        $query = House::with(['currentResident', 'occupancyHistories.resident']);
+
+        // Backward compatible: without pagination params, return full list.
+        if (!$request->has('page') && !$request->has('per_page')) {
+            return response()->json($query->get());
+        }
+
+        $perPage = (int) $request->query('per_page', 10);
+        $perPage = max(1, min($perPage, 100));
+
+        return response()->json(
+            $query->orderByDesc('id')->paginate($perPage)
+        );
     }
 
     public function store(Request $request)
@@ -28,7 +40,7 @@ class HouseController extends Controller
         ]);
 
         $house = House::create($validated);
-        return response()->json($house, 21);
+        return response()->json($house, 201);
     }
 
     public function show(House $house)
@@ -50,7 +62,7 @@ class HouseController extends Controller
     public function destroy(House $house)
     {
         $house->delete();
-        return response()->json(null, 24);
+        return response()->json(null, 204);
     }
 
     public function assignResident(Request $request, House $house)

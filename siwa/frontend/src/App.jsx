@@ -17,6 +17,8 @@ import {
 } from "lucide-react";
 import "./styles/global.css";
 
+import perumahanImage from "./assets/perumahan.png";
+
 // Pages (to be created)
 import Dashboard from "./pages/Dashboard";
 import Residents from "./pages/Residents";
@@ -49,48 +51,60 @@ const SidebarLink = ({ to, icon: Icon, children }) => {
   );
 };
 
-const Navbar = () => (
-  <nav
-    className="glass-card"
-    style={{
-      margin: "1rem",
-      display: "flex",
-      justifyContent: "space-between",
-      alignItems: "center",
-      padding: "1rem 2rem",
-    }}
-  >
-    <h1
+const Navbar = () => {
+  const location = useLocation();
+  const isDashboard = location.pathname === "/";
+
+  return (
+    <nav
+      className="glass-card"
       style={{
-        fontSize: "1.5rem",
-        fontWeight: "800",
-        background:
-          "linear-gradient(to right, var(--primary), var(--secondary))",
-        WebkitBackgroundClip: "text",
-        WebkitTextFillColor: "transparent",
+        margin: "1rem",
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        padding: "1rem 2rem",
+        ...(isDashboard
+          ? {
+              backgroundImage: `linear-gradient(rgba(255,255,255,0.82), rgba(255,255,255,0.82)), url(${perumahanImage})`,
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+            }
+          : null),
       }}
     >
-      SIWA
-    </h1>
-    <div style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
-      <div
+      <h1
         style={{
-          width: "40px",
-          height: "40px",
-          borderRadius: "50%",
-          background: "var(--primary)",
-          color: "#fff",
-          display: "flex",
-          alignItems: "center",
-          justifyItems: "center",
-          justifyContent: "center",
+          fontSize: "1.5rem",
+          fontWeight: "800",
+          background:
+            "linear-gradient(to right, var(--primary), var(--secondary))",
+          WebkitBackgroundClip: "text",
+          WebkitTextFillColor: "transparent",
         }}
       >
-        RT
+        SIWA
+      </h1>
+      <div style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
+        <div
+          style={{
+            width: "40px",
+            height: "40px",
+            borderRadius: "50%",
+            background: "var(--primary)",
+            color: "#fff",
+            display: "flex",
+            alignItems: "center",
+            justifyItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          RT
+        </div>
       </div>
-    </div>
-  </nav>
-);
+    </nav>
+  );
+};
 
 function App() {
   return (

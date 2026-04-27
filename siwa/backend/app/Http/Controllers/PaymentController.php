@@ -16,9 +16,21 @@ class PaymentController extends Controller
         $this->billingService = $billingService;
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        return response()->json(Payment::with(['house', 'resident'])->get());
+        $query = Payment::with(['house', 'resident']);
+
+        // Backward compatible: without pagination params, return full list.
+        if (!$request->has('page') && !$request->has('per_page')) {
+            return response()->json($query->get());
+        }
+
+        $perPage = (int) $request->query('per_page', 10);
+        $perPage = max(1, min($perPage, 100));
+
+        return response()->json(
+            $query->orderByDesc('id')->paginate($perPage)
+        );
     }
 
     public function store(Request $request)
@@ -33,7 +45,7 @@ class PaymentController extends Controller
         ]);
 
         $payment = $this->billingService->recordPayment($validated);
-        return response()->json($payment, 21);
+        return response()->json($payment, 201);
     }
 
     public function show(Payment $payment)

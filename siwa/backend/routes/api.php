@@ -8,6 +8,7 @@ use App\Http\Controllers\ResidentController;
 use Illuminate\Support\Facades\Route;
 
 Route::apiResource('residents', ResidentController::class);
+Route::delete('residents', [ResidentController::class, 'destroyAll']);
 Route::apiResource('houses', HouseController::class);
 Route::post('houses/{house}/assign', [HouseController::class, 'assignResident']);
 Route::post('houses/{house}/vacate', [HouseController::class, 'vacate']);

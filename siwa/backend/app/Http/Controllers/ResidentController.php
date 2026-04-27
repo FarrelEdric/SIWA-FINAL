@@ -8,9 +8,21 @@ use Illuminate\Support\Facades\Storage;
 
 class ResidentController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        return response()->json(Resident::all());
+        // Backward compatible: without pagination params, return full list.
+        if (!$request->has('page') && !$request->has('per_page')) {
+            return response()->json(Resident::all());
+        }
+
+        $perPage = (int) $request->query('per_page', 10);
+        $perPage = max(1, min($perPage, 100));
+
+        return response()->json(
+            Resident::query()
+                ->orderByDesc('id')
+                ->paginate($perPage)
+        );
     }
 
     public function store(Request $request)
@@ -29,7 +41,7 @@ class ResidentController extends Controller
         }
 
         $resident = Resident::create($validated);
-        return response()->json($resident, 21);
+        return response()->json($resident, 201);
     }
 
     public function show(Resident $resident)
@@ -65,6 +77,23 @@ class ResidentController extends Controller
             Storage::disk('public')->delete($resident->ktp_photo);
         }
         $resident->delete();
-        return response()->json(null, 24);
+        return response()->json(null, 204);
+    }
+
+    public function destroyAll()
+    {
+        $photoPaths = Resident::query()
+            ->whereNotNull('ktp_photo')
+            ->pluck('ktp_photo')
+            ->filter()
+            ->values();
+
+        foreach ($photoPaths as $path) {
+            Storage::disk('public')->delete($path);
+        }
+
+        Resident::query()->delete();
+
+        return response()->json(['message' => 'All residents deleted'], 200);
     }
 }
