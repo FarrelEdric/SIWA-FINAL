@@ -203,6 +203,8 @@ const Expenses = () => {
             alignItems: "center",
             gap: "0.75rem",
             flexWrap: "wrap",
+            flex: 1,
+            justifyContent: "flex-end"
           }}
         >
           <div
@@ -227,29 +229,33 @@ const Expenses = () => {
             />
           </div>
 
-          <button
-            className="btn btn-outline"
-            style={{ color: "var(--danger)" }}
-            onClick={handleDeleteAll}
-            disabled={loading || total === 0}
-            title="Hapus semua data pengeluaran"
-          >
-            <Trash2 size={18} />
-            Hapus Semua
-          </button>
+          <div style={{ display: "flex", gap: "0.75rem" }}>
+            <button
+              className="btn btn-outline"
+              style={{ color: "var(--danger)" }}
+              onClick={handleDeleteAll}
+              disabled={loading || total === 0}
+              title="Hapus semua data pengeluaran"
+            >
+              <Trash2 size={18} />
+              <span className="desktop-only">Hapus Semua</span>
+            </button>
 
-          <button
-            className="btn btn-primary"
-            onClick={() => setShowModal(true)}
-          >
-            <Plus size={20} />
-            Catat Pengeluaran
-          </button>
+            <button
+              className="btn btn-primary"
+              onClick={() => setShowModal(true)}
+            >
+              <Plus size={20} />
+              <span className="desktop-only">Catat Pengeluaran</span>
+              <span className="mobile-only">Catat</span>
+            </button>
+          </div>
         </div>
       </header>
 
-      <div className="glass-card">
-        <table>
+      <div className="glass-card" style={{ padding: 0, overflow: "hidden" }}>
+        <div className="table-responsive">
+          <table>
           <thead>
             <tr>
               <th>Tanggal</th>
@@ -291,6 +297,7 @@ const Expenses = () => {
             )}
           </tbody>
         </table>
+      </div>
 
         <div
           style={{
@@ -363,7 +370,7 @@ const Expenses = () => {
         >
           <div
             className="glass-card"
-            style={{ width: "500px", background: "var(--glass-bg)" }}
+            style={{ width: "100%", maxWidth: "500px", background: "var(--glass-bg)", margin: "1rem" }}
           >
             <h2 style={{ marginBottom: "1.5rem" }}>Catat Pengeluaran Baru</h2>
             <form
@@ -384,7 +391,7 @@ const Expenses = () => {
               <div
                 style={{
                   display: "grid",
-                  gridTemplateColumns: "1fr 1fr",
+                  gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
                   gap: "1rem",
                 }}
               >

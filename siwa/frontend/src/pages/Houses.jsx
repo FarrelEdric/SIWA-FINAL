@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { houseService, residentService, STORAGE_URL } from "../services/api";
-import { Home, UserPlus, UserMinus, History, Search, Eye, Phone } from "lucide-react";
+import { Home, UserPlus, UserMinus, Search, Eye, Phone } from "lucide-react";
 import Swal from "sweetalert2";
 
 const Houses = () => {
@@ -155,7 +155,7 @@ const Houses = () => {
       <header>
         <h1 style={{ fontSize: "2rem", fontWeight: "800" }}>Manajemen Rumah</h1>
         <p style={{ color: "var(--text-secondary)" }}>
-          Kelola status hunian dan histori warga per rumah.
+          Kelola status hunian dan detail warga per rumah.
         </p>
       </header>
 
@@ -284,19 +284,12 @@ const Houses = () => {
                 )}
                 <button
                   className="btn btn-outline"
-                  style={{ flex: 0.5, color: "var(--primary)" }}
+                  style={{ flex: 1, color: "var(--primary)" }}
                   title="Detail Penghuni"
                   disabled={!h.current_resident}
                   onClick={() => openDetailModal(h.current_resident)}
                 >
-                  <Eye size={16} />
-                </button>
-                <button
-                  className="btn btn-outline"
-                  style={{ flex: 0.5 }}
-                  title="History"
-                >
-                  <History size={16} />
+                  <Eye size={16} /> Detail
                 </button>
               </div>
             </div>
@@ -371,7 +364,7 @@ const Houses = () => {
         >
           <div
             className="glass-card"
-            style={{ width: "400px", background: "var(--glass-bg)" }}
+            style={{ width: "100%", maxWidth: "400px", background: "var(--glass-bg)", margin: "1rem" }}
           >
             <h2 style={{ marginBottom: "1.5rem" }}>
               Assign Penghuni - Rumah {selectedHouse.house_number}
@@ -446,7 +439,7 @@ const Houses = () => {
         >
           <div
             className="glass-card"
-            style={{ width: "500px", background: "var(--glass-bg)" }}
+            style={{ width: "100%", maxWidth: "500px", background: "var(--glass-bg)", margin: "1rem", maxHeight: "90vh", overflowY: "auto" }}
           >
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
               <h2 style={{ margin: 0 }}>Detail Penghuni</h2>

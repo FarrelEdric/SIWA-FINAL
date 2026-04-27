@@ -276,6 +276,8 @@ const Payments = () => {
             alignItems: "center",
             gap: "0.75rem",
             flexWrap: "wrap",
+            flex: 1,
+            justifyContent: "flex-end"
           }}
         >
           <div
@@ -284,6 +286,7 @@ const Payments = () => {
               alignItems: "center",
               gap: "0.5rem",
               minWidth: "260px",
+              flex: 1,
             }}
           >
             <Search size={18} style={{ color: "var(--text-secondary)" }} />
@@ -299,36 +302,41 @@ const Payments = () => {
             />
           </div>
 
-          <button
-            className="btn btn-primary"
-            onClick={() => setShowModal(true)}
-          >
-            <CreditCard size={20} />
-            Input Pembayaran
-          </button>
-          
-          <button
-            className="btn btn-outline"
-            style={{ color: "var(--danger)", borderColor: "var(--danger)" }}
-            onClick={handleDeleteSelected}
-            disabled={selectedIds.length === 0 || loading}
-          >
-            Hapus Terpilih ({selectedIds.length})
-          </button>
+          <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
+            <button
+              className="btn btn-primary"
+              onClick={() => setShowModal(true)}
+            >
+              <CreditCard size={20} />
+              <span className="desktop-only">Input</span> Pembayaran
+            </button>
+            
+            <button
+              className="btn btn-outline"
+              style={{ color: "var(--danger)", borderColor: "var(--danger)" }}
+              onClick={handleDeleteSelected}
+              disabled={selectedIds.length === 0 || loading}
+            >
+              Hapus <span className="desktop-only">Terpilih</span> ({selectedIds.length})
+            </button>
 
-          <button
-            className="btn btn-outline"
-            style={{ background: "var(--danger)", color: "#fff" }}
-            onClick={handleDeleteAll}
-            disabled={loading}
-          >
-            Hapus Semua
-          </button>
+            <button
+              className="btn btn-outline"
+              style={{ background: "var(--danger)", color: "#fff" }}
+              onClick={handleDeleteAll}
+              disabled={loading}
+              title="Hapus Semua"
+            >
+              <span className="desktop-only">Hapus Semua</span>
+              <span className="mobile-only">Hapus All</span>
+            </button>
+          </div>
         </div>
       </header>
 
-      <div className="glass-card">
-        <table>
+      <div className="glass-card" style={{ padding: 0, overflow: "hidden" }}>
+        <div className="table-responsive">
+          <table>
           <thead>
             <tr>
               <th style={{ width: "40px" }}>
@@ -380,6 +388,7 @@ const Payments = () => {
             )}
           </tbody>
         </table>
+      </div>
 
         <div
           style={{
@@ -452,7 +461,7 @@ const Payments = () => {
         >
           <div
             className="glass-card"
-            style={{ width: "500px", background: "var(--glass-bg)" }}
+            style={{ width: "100%", maxWidth: "500px", background: "var(--glass-bg)", margin: "1rem" }}
           >
             <h2 style={{ marginBottom: "1.5rem" }}>Input Pembayaran Baru</h2>
             <form
@@ -489,7 +498,7 @@ const Payments = () => {
               <div
                 style={{
                   display: "grid",
-                  gridTemplateColumns: "1fr 1fr",
+                  gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
                   gap: "1rem",
                 }}
               >

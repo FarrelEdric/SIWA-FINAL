@@ -139,3 +139,40 @@ textarea:focus {
   background: rgba(154, 122, 53, 0.14);
   color: var(--warning);
 }
+
+@media (max-width: 1024px) {
+  .glass-card {
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .table-responsive {
+    overflow-x: auto;
+    display: block;
+    width: 100%;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  table {
+    min-width: 600px; /* Force scroll on small screens for tables */
+  }
+
+  .btn {
+    padding: 0.6rem 1rem;
+    font-size: 0.875rem;
+  }
+}
+
+.mobile-only {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .mobile-only {
+    display: block;
+  }
+  .desktop-only {
+    display: none;
+  }
+}

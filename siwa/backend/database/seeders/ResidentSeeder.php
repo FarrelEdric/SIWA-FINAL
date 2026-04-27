@@ -14,7 +14,7 @@ class ResidentSeeder extends Seeder
     {
         \Illuminate\Support\Facades\Schema::disableForeignKeyConstraints();
         \App\Models\Resident::truncate();
-        \App\Models\Resident::factory()->count(20)->create();
+        \App\Models\Resident::factory()->count(20)->create();// Kita suruh factory buatkan 20 data sekaligus
         \Illuminate\Support\Facades\Schema::enableForeignKeyConstraints();
     }
 }

@@ -80,7 +80,7 @@ const Dashboard = () => {
         </p>
       </header>
 
-      <div style={{ display: "flex", gap: "1.5rem" }}>
+      <div style={{ display: "flex", gap: "1.5rem", flexWrap: "wrap" }}>
         <StatCard
           title="Pemasukan Bulan Ini"
           value={data.summary.total_income}
@@ -142,63 +142,67 @@ const Dashboard = () => {
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "1fr 1fr",
+          gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
           gap: "1.5rem",
         }}
       >
         <div className="glass-card">
           <h3 style={{ marginBottom: "1rem" }}>Transaksi Pemasukan Terbaru</h3>
-          <table>
-            <thead>
-              <tr>
-                <th>Tanggal</th>
-                <th>Rumah</th>
-                <th>Tipe</th>
-                <th>Jumlah</th>
-              </tr>
-            </thead>
-            <tbody>
-              {data.details.income.slice(0, 5).map((item) => (
-                <tr key={item.id}>
-                  <td>{new Date(item.payment_date).toLocaleDateString()}</td>
-                  <td>{item.house.house_number}</td>
-                  <td>
-                    <span className="badge badge-success">
-                      {item.payment_type}
-                    </span>
-                  </td>
-                  <td>Rp {item.amount.toLocaleString()}</td>
+          <div className="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Tanggal</th>
+                  <th>Rumah</th>
+                  <th>Tipe</th>
+                  <th>Jumlah</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {data.details.income.slice(0, 5).map((item) => (
+                  <tr key={item.id}>
+                    <td>{new Date(item.payment_date).toLocaleDateString()}</td>
+                    <td>{item.house.house_number}</td>
+                    <td>
+                      <span className="badge badge-success">
+                        {item.payment_type}
+                      </span>
+                    </td>
+                    <td>Rp {item.amount.toLocaleString()}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
         <div className="glass-card">
           <h3 style={{ marginBottom: "1rem" }}>
             Transaksi Pengeluaran Terbaru
           </h3>
-          <table>
-            <thead>
-              <tr>
-                <th>Tanggal</th>
-                <th>Judul</th>
-                <th>Kategori</th>
-                <th>Jumlah</th>
-              </tr>
-            </thead>
-            <tbody>
-              {data.details.expense.slice(0, 5).map((item) => (
-                <tr key={item.id}>
-                  <td>{new Date(item.expense_date).toLocaleDateString()}</td>
-                  <td>{item.title}</td>
-                  <td>
-                    <span className="badge badge-warning">{item.category}</span>
-                  </td>
-                  <td>Rp {item.amount.toLocaleString()}</td>
+          <div className="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Tanggal</th>
+                  <th>Judul</th>
+                  <th>Kategori</th>
+                  <th>Jumlah</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {data.details.expense.slice(0, 5).map((item) => (
+                  <tr key={item.id}>
+                    <td>{new Date(item.expense_date).toLocaleDateString()}</td>
+                    <td>{item.title}</td>
+                    <td>
+                      <span className="badge badge-warning">{item.category}</span>
+                    </td>
+                    <td>Rp {item.amount.toLocaleString()}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>

@@ -244,9 +244,11 @@ const Residents = () => {
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
+          flexWrap: "wrap",
+          gap: "1rem",
         }}
       >
-        <div>
+        <div style={{ minWidth: "200px" }}>
           <h1 style={{ fontSize: "2rem", fontWeight: "800" }}>
             Manajemen Penghuni
           </h1>
@@ -254,13 +256,14 @@ const Residents = () => {
             Kelola data seluruh warga perumahan.
           </p>
         </div>
-        <div style={{ display: "flex", gap: "0.75rem" }}>
+        <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap", flex: 1, justifyContent: "flex-end" }}>
           <div
             style={{
               display: "flex",
               alignItems: "center",
               gap: "0.5rem",
               minWidth: "260px",
+              flex: 1,
             }}
           >
             <Search size={18} style={{ color: "var(--text-secondary)" }} />
@@ -276,25 +279,28 @@ const Residents = () => {
             />
           </div>
 
-          <button
-            className="btn btn-outline"
-            style={{ color: "var(--danger)" }}
-            onClick={handleDeleteAll}
-            disabled={loading || total === 0}
-            title="Hapus semua data penghuni"
-          >
-            <Trash2 size={18} />
-            Hapus Semua
-          </button>
-          <button className="btn btn-primary" onClick={openCreateModal}>
-            <Plus size={20} />
-            Tambah Penghuni
-          </button>
+          <div style={{ display: "flex", gap: "0.75rem" }}>
+            <button
+              className="btn btn-outline"
+              style={{ color: "var(--danger)" }}
+              onClick={handleDeleteAll}
+              disabled={loading || total === 0}
+              title="Hapus semua data penghuni"
+            >
+              <Trash2 size={18} />
+              <span className="desktop-only">Hapus Semua</span>
+            </button>
+            <button className="btn btn-primary" onClick={openCreateModal}>
+              <Plus size={20} />
+              Tambah <span className="desktop-only">Penghuni</span>
+            </button>
+          </div>
         </div>
       </header>
 
-      <div className="glass-card">
-        <table>
+      <div className="glass-card" style={{ padding: 0, overflow: "hidden" }}>
+        <div className="table-responsive">
+          <table>
           <thead>
             <tr>
               <th>Nama Lengkap</th>
@@ -374,8 +380,9 @@ const Residents = () => {
                 </tr>
               ))
             )}
-          </tbody>
-        </table>
+            </tbody>
+          </table>
+        </div>
 
         <div
           style={{
@@ -448,7 +455,7 @@ const Residents = () => {
         >
           <div
             className="glass-card"
-            style={{ width: "500px", background: "var(--glass-bg)" }}
+            style={{ width: "100%", maxWidth: "500px", background: "var(--glass-bg)", margin: "1rem" }}
           >
             <h2 style={{ marginBottom: "1.5rem" }}>
               {editingResident ? "Edit Penghuni" : "Tambah Penghuni Baru"}
@@ -578,7 +585,7 @@ const Residents = () => {
         >
           <div
             className="glass-card"
-            style={{ width: "500px", background: "var(--glass-bg)" }}
+            style={{ width: "100%", maxWidth: "500px", background: "var(--glass-bg)", margin: "1rem", maxHeight: "90vh", overflowY: "auto" }}
           >
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
               <h2 style={{ margin: 0 }}>Detail Penghuni</h2>
