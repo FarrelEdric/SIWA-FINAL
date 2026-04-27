@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { residentService } from "../services/api";
+import { residentService, STORAGE_URL } from "../services/api";
 import {
   Plus,
   Edit2,
@@ -7,6 +7,7 @@ import {
   Phone,
   User as UserIcon,
   Search,
+  Eye,
 } from "lucide-react";
 import Swal from "sweetalert2";
 
@@ -21,6 +22,9 @@ const Residents = () => {
   const [showModal, setShowModal] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [editingResident, setEditingResident] = useState(null);
+  const [selectedResident, setSelectedResident] = useState(null);
+  const [showDetailModal, setShowDetailModal] = useState(false);
+  const [zoomedPhoto, setZoomedPhoto] = useState(null);
   const [formData, setFormData] = useState({
     full_name: "",
     resident_status: "tetap",
@@ -53,6 +57,11 @@ const Residents = () => {
       ktp_photo: null,
     });
     setShowModal(true);
+  };
+
+  const openDetailModal = (resident) => {
+    setSelectedResident(resident);
+    setShowDetailModal(true);
   };
 
   const closeModal = () => {
@@ -156,10 +165,11 @@ const Residents = () => {
         });
     } catch (error) {
       console.error(error);
+      const message = error.response?.data?.message || "Aksi tidak berhasil. Coba lagi.";
       await Swal.fire({
         icon: "error",
         title: "Gagal",
-        text: "Aksi tidak berhasil. Coba lagi.",
+        text: message,
       });
     } finally {
       setSubmitting(false);
@@ -338,6 +348,14 @@ const Residents = () => {
                     {r.marital_status === "menikah" ? "Menikah" : "Belum"}
                   </td>
                   <td style={{ display: "flex", gap: "0.5rem" }}>
+                    <button
+                      className="btn btn-outline"
+                      style={{ padding: "0.5rem", color: "var(--primary)" }}
+                      onClick={() => openDetailModal(r)}
+                      title="Lihat Detail"
+                    >
+                      <Eye size={16} />
+                    </button>
                     <button
                       className="btn btn-outline"
                       style={{ padding: "0.5rem" }}
@@ -543,6 +561,123 @@ const Residents = () => {
               </div>
             </form>
           </div>
+        </div>
+      )}
+
+      {showDetailModal && selectedResident && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(15, 20, 16, 0.4)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 100,
+          }}
+        >
+          <div
+            className="glass-card"
+            style={{ width: "500px", background: "var(--glass-bg)" }}
+          >
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
+              <h2 style={{ margin: 0 }}>Detail Penghuni</h2>
+              <button 
+                className="btn btn-outline" 
+                style={{ padding: "0.25rem 0.5rem" }} 
+                onClick={() => setShowDetailModal(false)}
+              >
+                Tutup
+              </button>
+            </div>
+            
+            <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
+              {selectedResident.ktp_photo && (
+                <div style={{ textAlign: "center" }}>
+                  <p style={{ fontWeight: "600", marginBottom: "0.5rem", color: "var(--text-secondary)" }}>Foto KTP</p>
+                  <div 
+                    onClick={() => setZoomedPhoto(`${STORAGE_URL}/${selectedResident.ktp_photo}`)}
+                    title="Klik untuk memperbesar"
+                    style={{ cursor: "zoom-in" }}
+                  >
+                    <img 
+                      src={`${STORAGE_URL}/${selectedResident.ktp_photo}`} 
+                      alt="KTP" 
+                      style={{ width: "100%", maxHeight: "250px", objectFit: "contain", borderRadius: "0.5rem", border: "1px solid var(--glass-border)" }}
+                    />
+                  </div>
+                </div>
+              )}
+              
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1.5fr", gap: "1rem" }}>
+                <span style={{ fontWeight: "600", color: "var(--text-secondary)" }}>Nama Lengkap:</span>
+                <span>{selectedResident.full_name}</span>
+                
+                <span style={{ fontWeight: "600", color: "var(--text-secondary)" }}>Status Hunian:</span>
+                <span className={`badge ${selectedResident.resident_status === "tetap" ? "badge-success" : "badge-warning"}`} style={{ alignSelf: "start" }}>
+                  {selectedResident.resident_status === "tetap" ? "Tetap" : "Kontrak"}
+                </span>
+                
+                <span style={{ fontWeight: "600", color: "var(--text-secondary)" }}>No. Telepon:</span>
+                <span style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                  <Phone size={14} />
+                  {selectedResident.phone_number}
+                </span>
+                
+                <span style={{ fontWeight: "600", color: "var(--text-secondary)" }}>Status Pernikahan:</span>
+                <span>{selectedResident.marital_status === "menikah" ? "Menikah" : "Belum Menikah"}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {zoomedPhoto && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0, 0, 0, 0.8)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 110,
+            padding: "2rem",
+          }}
+          onClick={() => setZoomedPhoto(null)}
+        >
+          <img
+            src={zoomedPhoto}
+            alt="Zoomed KTP"
+            style={{
+              maxWidth: "100%",
+              maxHeight: "100%",
+              objectFit: "contain",
+              borderRadius: "0.5rem",
+              boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.5)",
+            }}
+          />
+          <button
+            style={{
+              position: "absolute",
+              top: "2rem",
+              right: "2rem",
+              background: "white",
+              border: "none",
+              borderRadius: "50%",
+              width: "40px",
+              height: "40px",
+              cursor: "pointer",
+              fontSize: "1.5rem",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontWeight: "bold",
+            }}
+            onClick={() => setZoomedPhoto(null)}
+          >
+            ×
+          </button>
         </div>
       )}
     </div>

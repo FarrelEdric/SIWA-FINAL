@@ -1,6 +1,7 @@
 import axios from "axios";
 
 const API_URL = "http://localhost:8000/api";
+export const STORAGE_URL = "http://localhost:8000/storage";
 
 const api = axios.create({
   baseURL: API_URL,
@@ -15,7 +16,9 @@ export const residentService = {
   create: (data) => {
     const formData = new FormData();
     for (const key in data) {
-      formData.append(key, data[key]);
+      if (data[key] !== null && data[key] !== undefined) {
+        formData.append(key, data[key]);
+      }
     }
     return api.post("/residents", formData, {
       headers: { "Content-Type": "multipart/form-data" },
@@ -24,7 +27,9 @@ export const residentService = {
   update: (id, data) => {
     const formData = new FormData();
     for (const key in data) {
-      formData.append(key, data[key]);
+      if (data[key] !== null && data[key] !== undefined) {
+        formData.append(key, data[key]);
+      }
     }
     formData.append("_method", "PUT");
     return api.post(`/residents/${id}`, formData, {
