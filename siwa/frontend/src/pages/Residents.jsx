@@ -64,6 +64,18 @@ const Residents = () => {
     setShowDetailModal(true);
   };
 
+  const getResidentPhotoUrl = (photoPath) => {
+    if (!photoPath) return null;
+    if (photoPath.startsWith("http://") || photoPath.startsWith("https://")) {
+      return photoPath;
+    }
+
+    const cleanPath = photoPath.startsWith("/")
+      ? photoPath.slice(1)
+      : photoPath;
+    return `${STORAGE_URL}/${cleanPath}`;
+  };
+
   const closeModal = () => {
     setShowModal(false);
     setEditingResident(null);
@@ -165,7 +177,8 @@ const Residents = () => {
         });
     } catch (error) {
       console.error(error);
-      const message = error.response?.data?.message || "Aksi tidak berhasil. Coba lagi.";
+      const message =
+        error.response?.data?.message || "Aksi tidak berhasil. Coba lagi.";
       await Swal.fire({
         icon: "error",
         title: "Gagal",
@@ -256,7 +269,15 @@ const Residents = () => {
             Kelola data seluruh warga perumahan.
           </p>
         </div>
-        <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap", flex: 1, justifyContent: "flex-end" }}>
+        <div
+          style={{
+            display: "flex",
+            gap: "0.75rem",
+            flexWrap: "wrap",
+            flex: 1,
+            justifyContent: "flex-end",
+          }}
+        >
           <div
             style={{
               display: "flex",
@@ -301,85 +322,85 @@ const Residents = () => {
       <div className="glass-card" style={{ padding: 0, overflow: "hidden" }}>
         <div className="table-responsive">
           <table>
-          <thead>
-            <tr>
-              <th>Nama Lengkap</th>
-              <th>Status</th>
-              <th>No. Telepon</th>
-              <th>Status Nikah</th>
-              <th>Aksi</th>
-            </tr>
-          </thead>
-          <tbody>
-            {loading ? (
+            <thead>
               <tr>
-                <td colSpan={5} style={{ color: "var(--text-secondary)" }}>
-                  Loading...
-                </td>
+                <th>Nama Lengkap</th>
+                <th>Status</th>
+                <th>No. Telepon</th>
+                <th>Status Nikah</th>
+                <th>Aksi</th>
               </tr>
-            ) : (
-              residents.map((r) => (
-                <tr key={r.id}>
-                  <td
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "0.75rem",
-                    }}
-                  >
-                    <div
-                      style={{
-                        width: "32px",
-                        height: "32px",
-                        background: "var(--surface-muted)",
-                        borderRadius: "50%",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                      }}
-                    >
-                      <UserIcon size={16} />
-                    </div>
-                    {r.full_name}
-                  </td>
-                  <td>
-                    <span
-                      className={`badge ${r.resident_status === "tetap" ? "badge-success" : "badge-warning"}`}
-                    >
-                      {r.resident_status === "tetap" ? "Tetap" : "Kontrak"}
-                    </span>
-                  </td>
-                  <td>{r.phone_number}</td>
-                  <td>
-                    {r.marital_status === "menikah" ? "Menikah" : "Belum"}
-                  </td>
-                  <td style={{ display: "flex", gap: "0.5rem" }}>
-                    <button
-                      className="btn btn-outline"
-                      style={{ padding: "0.5rem", color: "var(--primary)" }}
-                      onClick={() => openDetailModal(r)}
-                      title="Lihat Detail"
-                    >
-                      <Eye size={16} />
-                    </button>
-                    <button
-                      className="btn btn-outline"
-                      style={{ padding: "0.5rem" }}
-                      onClick={() => openEditModal(r)}
-                    >
-                      <Edit2 size={16} />
-                    </button>
-                    <button
-                      className="btn btn-outline"
-                      style={{ padding: "0.5rem", color: "var(--danger)" }}
-                      onClick={() => handleDelete(r.id)}
-                    >
-                      <Trash2 size={16} />
-                    </button>
+            </thead>
+            <tbody>
+              {loading ? (
+                <tr>
+                  <td colSpan={5} style={{ color: "var(--text-secondary)" }}>
+                    Loading...
                   </td>
                 </tr>
-              ))
-            )}
+              ) : (
+                residents.map((r) => (
+                  <tr key={r.id}>
+                    <td
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "0.75rem",
+                      }}
+                    >
+                      <div
+                        style={{
+                          width: "32px",
+                          height: "32px",
+                          background: "var(--surface-muted)",
+                          borderRadius: "50%",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                        }}
+                      >
+                        <UserIcon size={16} />
+                      </div>
+                      {r.full_name}
+                    </td>
+                    <td>
+                      <span
+                        className={`badge ${r.resident_status === "tetap" ? "badge-success" : "badge-warning"}`}
+                      >
+                        {r.resident_status === "tetap" ? "Tetap" : "Kontrak"}
+                      </span>
+                    </td>
+                    <td>{r.phone_number}</td>
+                    <td>
+                      {r.marital_status === "menikah" ? "Menikah" : "Belum"}
+                    </td>
+                    <td style={{ display: "flex", gap: "0.5rem" }}>
+                      <button
+                        className="btn btn-outline"
+                        style={{ padding: "0.5rem", color: "var(--primary)" }}
+                        onClick={() => openDetailModal(r)}
+                        title="Lihat Detail"
+                      >
+                        <Eye size={16} />
+                      </button>
+                      <button
+                        className="btn btn-outline"
+                        style={{ padding: "0.5rem" }}
+                        onClick={() => openEditModal(r)}
+                      >
+                        <Edit2 size={16} />
+                      </button>
+                      <button
+                        className="btn btn-outline"
+                        style={{ padding: "0.5rem", color: "var(--danger)" }}
+                        onClick={() => handleDelete(r.id)}
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
@@ -455,7 +476,12 @@ const Residents = () => {
         >
           <div
             className="glass-card"
-            style={{ width: "100%", maxWidth: "500px", background: "var(--glass-bg)", margin: "1rem" }}
+            style={{
+              width: "100%",
+              maxWidth: "500px",
+              background: "var(--glass-bg)",
+              margin: "1rem",
+            }}
           >
             <h2 style={{ marginBottom: "1.5rem" }}>
               {editingResident ? "Edit Penghuni" : "Tambah Penghuni Baru"}
@@ -585,54 +611,138 @@ const Residents = () => {
         >
           <div
             className="glass-card"
-            style={{ width: "100%", maxWidth: "500px", background: "var(--glass-bg)", margin: "1rem", maxHeight: "90vh", overflowY: "auto" }}
+            style={{
+              width: "100%",
+              maxWidth: "500px",
+              background: "var(--glass-bg)",
+              margin: "1rem",
+              maxHeight: "90vh",
+              overflowY: "auto",
+            }}
           >
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: "1.5rem",
+              }}
+            >
               <h2 style={{ margin: 0 }}>Detail Penghuni</h2>
-              <button 
-                className="btn btn-outline" 
-                style={{ padding: "0.25rem 0.5rem" }} 
+              <button
+                className="btn btn-outline"
+                style={{ padding: "0.25rem 0.5rem" }}
                 onClick={() => setShowDetailModal(false)}
               >
                 Tutup
               </button>
             </div>
-            
-            <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
+
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: "1.5rem",
+              }}
+            >
               {selectedResident.ktp_photo && (
                 <div style={{ textAlign: "center" }}>
-                  <p style={{ fontWeight: "600", marginBottom: "0.5rem", color: "var(--text-secondary)" }}>Foto KTP</p>
-                  <div 
-                    onClick={() => setZoomedPhoto(`${STORAGE_URL}/${selectedResident.ktp_photo}`)}
-                    title="Klik untuk memperbesar"
-                    style={{ cursor: "zoom-in" }}
+                  <p
+                    style={{
+                      fontWeight: "600",
+                      marginBottom: "0.5rem",
+                      color: "var(--text-secondary)",
+                    }}
                   >
-                    <img 
-                      src={`${STORAGE_URL}/${selectedResident.ktp_photo}`} 
-                      alt="KTP" 
-                      style={{ width: "100%", maxHeight: "250px", objectFit: "contain", borderRadius: "0.5rem", border: "1px solid var(--glass-border)" }}
-                    />
-                  </div>
+                    Foto KTP
+                  </p>
+                  {(() => {
+                    const photoUrl = getResidentPhotoUrl(
+                      selectedResident.ktp_photo,
+                    );
+
+                    if (!photoUrl) return null;
+
+                    return (
+                      <div
+                        onClick={() => setZoomedPhoto(photoUrl)}
+                        title="Klik untuk memperbesar"
+                        style={{ cursor: "zoom-in" }}
+                      >
+                        <img
+                          src={photoUrl}
+                          alt="KTP"
+                          onError={(event) => {
+                            event.currentTarget.style.display = "none";
+                          }}
+                          style={{
+                            width: "100%",
+                            maxHeight: "250px",
+                            objectFit: "contain",
+                            borderRadius: "0.5rem",
+                            border: "1px solid var(--glass-border)",
+                          }}
+                        />
+                      </div>
+                    );
+                  })()}
                 </div>
               )}
-              
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1.5fr", gap: "1rem" }}>
-                <span style={{ fontWeight: "600", color: "var(--text-secondary)" }}>Nama Lengkap:</span>
-                <span>{selectedResident.full_name}</span>
-                
-                <span style={{ fontWeight: "600", color: "var(--text-secondary)" }}>Status Hunian:</span>
-                <span className={`badge ${selectedResident.resident_status === "tetap" ? "badge-success" : "badge-warning"}`} style={{ alignSelf: "start" }}>
-                  {selectedResident.resident_status === "tetap" ? "Tetap" : "Kontrak"}
+
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr 1.5fr",
+                  gap: "1rem",
+                }}
+              >
+                <span
+                  style={{ fontWeight: "600", color: "var(--text-secondary)" }}
+                >
+                  Nama Lengkap:
                 </span>
-                
-                <span style={{ fontWeight: "600", color: "var(--text-secondary)" }}>No. Telepon:</span>
-                <span style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                <span>{selectedResident.full_name}</span>
+
+                <span
+                  style={{ fontWeight: "600", color: "var(--text-secondary)" }}
+                >
+                  Status Hunian:
+                </span>
+                <span
+                  className={`badge ${selectedResident.resident_status === "tetap" ? "badge-success" : "badge-warning"}`}
+                  style={{ alignSelf: "start" }}
+                >
+                  {selectedResident.resident_status === "tetap"
+                    ? "Tetap"
+                    : "Kontrak"}
+                </span>
+
+                <span
+                  style={{ fontWeight: "600", color: "var(--text-secondary)" }}
+                >
+                  No. Telepon:
+                </span>
+                <span
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "0.5rem",
+                  }}
+                >
                   <Phone size={14} />
                   {selectedResident.phone_number}
                 </span>
-                
-                <span style={{ fontWeight: "600", color: "var(--text-secondary)" }}>Status Pernikahan:</span>
-                <span>{selectedResident.marital_status === "menikah" ? "Menikah" : "Belum Menikah"}</span>
+
+                <span
+                  style={{ fontWeight: "600", color: "var(--text-secondary)" }}
+                >
+                  Status Pernikahan:
+                </span>
+                <span>
+                  {selectedResident.marital_status === "menikah"
+                    ? "Menikah"
+                    : "Belum Menikah"}
+                </span>
               </div>
             </div>
           </div>
