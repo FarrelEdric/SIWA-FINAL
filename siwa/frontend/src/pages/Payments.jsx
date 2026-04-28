@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { paymentService, houseService } from "../services/api";
 import { CreditCard, Search } from "lucide-react";
 import Swal from "sweetalert2";
+import { formatCurrency } from "../utils/formatCurrency";
 
 const Payments = () => {
   const [payments, setPayments] = useState([]);
@@ -30,7 +31,11 @@ const Payments = () => {
   }, []);
 
   useEffect(() => {
-    if (formData.house_id && formData.payment_type && formData.payment_type !== "lainnya") {
+    if (
+      formData.house_id &&
+      formData.payment_type &&
+      formData.payment_type !== "lainnya"
+    ) {
       calculateAmount();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -277,7 +282,7 @@ const Payments = () => {
             gap: "0.75rem",
             flexWrap: "wrap",
             flex: 1,
-            justifyContent: "flex-end"
+            justifyContent: "flex-end",
           }}
         >
           <div
@@ -310,14 +315,15 @@ const Payments = () => {
               <CreditCard size={20} />
               <span className="desktop-only">Input</span> Pembayaran
             </button>
-            
+
             <button
               className="btn btn-outline"
               style={{ color: "var(--danger)", borderColor: "var(--danger)" }}
               onClick={handleDeleteSelected}
               disabled={selectedIds.length === 0 || loading}
             >
-              Hapus <span className="desktop-only">Terpilih</span> ({selectedIds.length})
+              Hapus <span className="desktop-only">Terpilih</span> (
+              {selectedIds.length})
             </button>
 
             <button
@@ -337,58 +343,61 @@ const Payments = () => {
       <div className="glass-card" style={{ padding: 0, overflow: "hidden" }}>
         <div className="table-responsive">
           <table>
-          <thead>
-            <tr>
-              <th style={{ width: "40px" }}>
-                <input
-                  type="checkbox"
-                  checked={payments.length > 0 && selectedIds.length === payments.length}
-                  onChange={toggleSelectAll}
-                />
-              </th>
-              <th>Tanggal Bayar</th>
-              <th>Rumah</th>
-              <th>Penghuni</th>
-              <th>Jenis</th>
-              <th>Periode</th>
-              <th>Jumlah</th>
-            </tr>
-          </thead>
-          <tbody>
-            {loading ? (
+            <thead>
               <tr>
-                <td colSpan={6} style={{ color: "var(--text-secondary)" }}>
-                  Loading...
-                </td>
+                <th style={{ width: "40px" }}>
+                  <input
+                    type="checkbox"
+                    checked={
+                      payments.length > 0 &&
+                      selectedIds.length === payments.length
+                    }
+                    onChange={toggleSelectAll}
+                  />
+                </th>
+                <th>Tanggal Bayar</th>
+                <th>Rumah</th>
+                <th>Penghuni</th>
+                <th>Jenis</th>
+                <th>Periode</th>
+                <th>Jumlah</th>
               </tr>
-            ) : (
-              payments.map((p) => (
-                <tr key={p.id}>
-                  <td>
-                    <input
-                      type="checkbox"
-                      checked={selectedIds.includes(p.id)}
-                      onChange={() => toggleSelect(p.id)}
-                    />
+            </thead>
+            <tbody>
+              {loading ? (
+                <tr>
+                  <td colSpan={6} style={{ color: "var(--text-secondary)" }}>
+                    Loading...
                   </td>
-                  <td>{new Date(p.payment_date).toLocaleDateString()}</td>
-                  <td>{p.house.house_number}</td>
-                  <td>{p.resident.full_name}</td>
-                  <td>
-                    <span className="badge badge-success">
-                      {p.payment_type}
-                    </span>
-                  </td>
-                  <td>
-                    {p.payment_period_start} s/d {p.payment_period_end}
-                  </td>
-                  <td>Rp {p.amount.toLocaleString()}</td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+              ) : (
+                payments.map((p) => (
+                  <tr key={p.id}>
+                    <td>
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.includes(p.id)}
+                        onChange={() => toggleSelect(p.id)}
+                      />
+                    </td>
+                    <td>{new Date(p.payment_date).toLocaleDateString()}</td>
+                    <td>{p.house.house_number}</td>
+                    <td>{p.resident.full_name}</td>
+                    <td>
+                      <span className="badge badge-success">
+                        {p.payment_type}
+                      </span>
+                    </td>
+                    <td>
+                      {p.payment_period_start} s/d {p.payment_period_end}
+                    </td>
+                    <td>Rp {formatCurrency(p.amount)}</td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
 
         <div
           style={{
@@ -461,7 +470,12 @@ const Payments = () => {
         >
           <div
             className="glass-card"
-            style={{ width: "100%", maxWidth: "500px", background: "var(--glass-bg)", margin: "1rem" }}
+            style={{
+              width: "100%",
+              maxWidth: "500px",
+              background: "var(--glass-bg)",
+              margin: "1rem",
+            }}
           >
             <h2 style={{ marginBottom: "1.5rem" }}>Input Pembayaran Baru</h2>
             <form
@@ -489,7 +503,11 @@ const Payments = () => {
                   value={formData.payment_type}
                   onChange={(e) => {
                     const val = e.target.value;
-                    setFormData({ ...formData, payment_type: val, amount: val === "lainnya" ? 0 : formData.amount });
+                    setFormData({
+                      ...formData,
+                      payment_type: val,
+                      amount: val === "lainnya" ? 0 : formData.amount,
+                    });
                   }}
                 >
                   <option value="satpam">Satpam (Rp 100.000)</option>
@@ -506,7 +524,10 @@ const Payments = () => {
                     required
                     placeholder="Contoh: 50000"
                     onChange={(e) =>
-                      setFormData({ ...formData, amount: Number(e.target.value) })
+                      setFormData({
+                        ...formData,
+                        amount: Number(e.target.value),
+                      })
                     }
                   />
                 </div>
@@ -554,10 +575,18 @@ const Payments = () => {
                   type="number"
                   readOnly={formData.payment_type !== "lainnya"}
                   value={formData.amount}
-                  style={{ background: formData.payment_type === "lainnya" ? "#fff" : "var(--surface-muted)" }}
+                  style={{
+                    background:
+                      formData.payment_type === "lainnya"
+                        ? "#fff"
+                        : "var(--surface-muted)",
+                  }}
                   onChange={(e) => {
                     if (formData.payment_type === "lainnya") {
-                      setFormData({ ...formData, amount: Number(e.target.value) });
+                      setFormData({
+                        ...formData,
+                        amount: Number(e.target.value),
+                      });
                     }
                   }}
                 />

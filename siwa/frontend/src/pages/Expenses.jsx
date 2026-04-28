@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { expenseService } from "../services/api";
-import { Plus, Trash2, Search } from "lucide-react";
+import { Plus, Trash2, Search, Eye } from "lucide-react";
 import Swal from "sweetalert2";
+import { formatCurrency } from "../utils/formatCurrency";
 
 const Expenses = () => {
   const [expenses, setExpenses] = useState([]);
@@ -12,7 +13,9 @@ const Expenses = () => {
   const [total, setTotal] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
   const [showModal, setShowModal] = useState(false);
+  const [showDetailModal, setShowDetailModal] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [selectedExpense, setSelectedExpense] = useState(null);
   const [formData, setFormData] = useState({
     title: "",
     amount: "",
@@ -147,6 +150,26 @@ const Expenses = () => {
     }
   };
 
+  const openDetailModal = async (expense) => {
+    try {
+      const response = await expenseService.getById(expense.id);
+      setSelectedExpense(response.data);
+      setShowDetailModal(true);
+    } catch (error) {
+      console.error(error);
+      await Swal.fire({
+        icon: "error",
+        title: "Gagal",
+        text: "Tidak bisa memuat detail pengeluaran.",
+      });
+    }
+  };
+
+  const closeDetailModal = () => {
+    setShowDetailModal(false);
+    setSelectedExpense(null);
+  };
+
   const handleDeleteAll = async () => {
     const result = await Swal.fire({
       icon: "warning",
@@ -204,7 +227,7 @@ const Expenses = () => {
             gap: "0.75rem",
             flexWrap: "wrap",
             flex: 1,
-            justifyContent: "flex-end"
+            justifyContent: "flex-end",
           }}
         >
           <div
@@ -256,48 +279,56 @@ const Expenses = () => {
       <div className="glass-card" style={{ padding: 0, overflow: "hidden" }}>
         <div className="table-responsive">
           <table>
-          <thead>
-            <tr>
-              <th>Tanggal</th>
-              <th>Judul</th>
-              <th>Kategori</th>
-              <th>Jumlah</th>
-              <th>Status</th>
-              <th>Aksi</th>
-            </tr>
-          </thead>
-          <tbody>
-            {loading ? (
+            <thead>
               <tr>
-                <td colSpan={6} style={{ color: "var(--text-secondary)" }}>
-                  Loading...
-                </td>
+                <th>Tanggal</th>
+                <th>Judul</th>
+                <th>Kategori</th>
+                <th>Jumlah</th>
+                <th>Status</th>
+                <th>Aksi</th>
               </tr>
-            ) : (
-              expenses.map((e) => (
-                <tr key={e.id}>
-                  <td>{new Date(e.expense_date).toLocaleDateString()}</td>
-                  <td>{e.title}</td>
-                  <td>
-                    <span className="badge badge-warning">{e.category}</span>
-                  </td>
-                  <td>Rp {parseFloat(e.amount).toLocaleString()}</td>
-                  <td>{e.recurring ? "Rutin" : "Sekali"}</td>
-                  <td>
-                    <button
-                      className="btn btn-outline"
-                      style={{ padding: "0.5rem", color: "var(--danger)" }}
-                      onClick={() => handleDelete(e.id)}
-                    >
-                      <Trash2 size={16} />
-                    </button>
+            </thead>
+            <tbody>
+              {loading ? (
+                <tr>
+                  <td colSpan={6} style={{ color: "var(--text-secondary)" }}>
+                    Loading...
                   </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+              ) : (
+                expenses.map((e) => (
+                  <tr key={e.id}>
+                    <td>{new Date(e.expense_date).toLocaleDateString()}</td>
+                    <td>{e.title}</td>
+                    <td>
+                      <span className="badge badge-warning">{e.category}</span>
+                    </td>
+                    <td>Rp {formatCurrency(e.amount)}</td>
+                    <td>{e.recurring ? "Rutin" : "Sekali"}</td>
+                    <td>
+                      <button
+                        className="btn btn-outline"
+                        style={{ padding: "0.5rem", marginRight: "0.5rem" }}
+                        onClick={() => openDetailModal(e)}
+                        title="Lihat detail pengeluaran"
+                      >
+                        <Eye size={16} />
+                      </button>
+                      <button
+                        className="btn btn-outline"
+                        style={{ padding: "0.5rem", color: "var(--danger)" }}
+                        onClick={() => handleDelete(e.id)}
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
 
         <div
           style={{
@@ -370,7 +401,12 @@ const Expenses = () => {
         >
           <div
             className="glass-card"
-            style={{ width: "100%", maxWidth: "500px", background: "var(--glass-bg)", margin: "1rem" }}
+            style={{
+              width: "100%",
+              maxWidth: "500px",
+              background: "var(--glass-bg)",
+              margin: "1rem",
+            }}
           >
             <h2 style={{ marginBottom: "1.5rem" }}>Catat Pengeluaran Baru</h2>
             <form
@@ -474,6 +510,109 @@ const Expenses = () => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {showDetailModal && selectedExpense && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(15, 20, 16, 0.4)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 100,
+          }}
+        >
+          <div
+            className="glass-card"
+            style={{
+              width: "100%",
+              maxWidth: "560px",
+              background: "var(--glass-bg)",
+              margin: "1rem",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: "1.5rem",
+              }}
+            >
+              <h2 style={{ margin: 0 }}>Detail Pengeluaran</h2>
+              <button
+                className="btn btn-outline"
+                style={{ padding: "0.25rem 0.5rem" }}
+                onClick={closeDetailModal}
+              >
+                Tutup
+              </button>
+            </div>
+
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1fr 1.5fr",
+                gap: "1rem",
+                rowGap: "1rem",
+              }}
+            >
+              <span
+                style={{ fontWeight: "600", color: "var(--text-secondary)" }}
+              >
+                Judul:
+              </span>
+              <span>{selectedExpense.title}</span>
+
+              <span
+                style={{ fontWeight: "600", color: "var(--text-secondary)" }}
+              >
+                Tanggal:
+              </span>
+              <span>
+                {new Date(selectedExpense.expense_date).toLocaleDateString()}
+              </span>
+
+              <span
+                style={{ fontWeight: "600", color: "var(--text-secondary)" }}
+              >
+                Kategori:
+              </span>
+              <span>
+                <span className="badge badge-warning">
+                  {selectedExpense.category}
+                </span>
+              </span>
+
+              <span
+                style={{ fontWeight: "600", color: "var(--text-secondary)" }}
+              >
+                Jumlah:
+              </span>
+              <span>Rp {formatCurrency(selectedExpense.amount)}</span>
+
+              <span
+                style={{ fontWeight: "600", color: "var(--text-secondary)" }}
+              >
+                Status:
+              </span>
+              <span>{selectedExpense.recurring ? "Rutin" : "Sekali"}</span>
+
+              <span
+                style={{ fontWeight: "600", color: "var(--text-secondary)" }}
+              >
+                Keterangan:
+              </span>
+              <span style={{ whiteSpace: "pre-wrap" }}>
+                {selectedExpense.description?.trim()
+                  ? selectedExpense.description
+                  : "-"}
+              </span>
+            </div>
           </div>
         </div>
       )}

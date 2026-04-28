@@ -13,6 +13,7 @@ import {
   Legend,
 } from "recharts";
 import { TrendingUp, TrendingDown, Wallet, Users, Home } from "lucide-react";
+import { formatCurrency } from "../utils/formatCurrency";
 
 const StatCard = ({ title, value, icon: Icon, color }) => (
   <div className="glass-card" style={{ flex: 1 }}>
@@ -30,7 +31,7 @@ const StatCard = ({ title, value, icon: Icon, color }) => (
         <h3
           style={{ fontSize: "1.5rem", fontWeight: "700", marginTop: "0.5rem" }}
         >
-          Rp {value.toLocaleString("id-ID")}
+          Rp {formatCurrency(value)}
         </h3>
       </div>
       <div
@@ -168,7 +169,7 @@ const Dashboard = () => {
                         {item.payment_type}
                       </span>
                     </td>
-                    <td>Rp {Math.floor(item.amount).toLocaleString("id-ID")}</td>
+                    <td>Rp {formatCurrency(item.amount)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -195,9 +196,11 @@ const Dashboard = () => {
                     <td>{new Date(item.expense_date).toLocaleDateString()}</td>
                     <td>{item.title}</td>
                     <td>
-                      <span className="badge badge-warning">{item.category}</span>
+                      <span className="badge badge-warning">
+                        {item.category}
+                      </span>
                     </td>
-                    <td>Rp {Math.floor(item.amount).toLocaleString("id-ID")}</td>
+                    <td>Rp {formatCurrency(item.amount)}</td>
                   </tr>
                 ))}
               </tbody>
