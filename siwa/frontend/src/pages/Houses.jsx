@@ -1,6 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { houseService, residentService, STORAGE_URL } from "../services/api";
-import { Home, UserPlus, UserMinus, Search, Eye, Phone } from "lucide-react";
+import {
+  Home,
+  UserPlus,
+  UserMinus,
+  Search,
+  Eye,
+  Phone,
+  Plus,
+} from "lucide-react";
 import Swal from "sweetalert2";
 
 const Houses = () => {
@@ -13,13 +21,19 @@ const Houses = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [residents, setResidents] = useState([]);
   const [showAssignModal, setShowAssignModal] = useState(false);
+  const [showCreateModal, setShowCreateModal] = useState(false);
   const [selectedHouse, setSelectedHouse] = useState(null);
   const [selectedResident, setSelectedResident] = useState(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [zoomedPhoto, setZoomedPhoto] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
   const [assignData, setAssignData] = useState({
     resident_id: "",
     start_date: "",
+  });
+  const [createData, setCreateData] = useState({
+    house_number: "",
+    status: "tidak_dihuni",
   });
 
   useEffect(() => {
@@ -114,6 +128,34 @@ const Houses = () => {
     }
   };
 
+  const handleCreate = async (e) => {
+    e.preventDefault();
+
+    if (submitting) return;
+
+    try {
+      setSubmitting(true);
+      await houseService.create(createData);
+      await Swal.fire({
+        icon: "success",
+        title: "Berhasil",
+        text: "Rumah berhasil ditambahkan.",
+      });
+      setShowCreateModal(false);
+      setCreateData({ house_number: "", status: "tidak_dihuni" });
+      fetchHouses();
+    } catch (error) {
+      console.error(error);
+      await Swal.fire({
+        icon: "error",
+        title: "Gagal",
+        text: error.response?.data?.message || "Tidak bisa menambahkan rumah.",
+      });
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   const handleVacate = async (house) => {
     const result = await Swal.fire({
       title: `Vacate Rumah ${house.house_number}`,
@@ -153,10 +195,32 @@ const Houses = () => {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "2rem" }}>
       <header>
-        <h1 style={{ fontSize: "2rem", fontWeight: "800" }}>Manajemen Rumah</h1>
-        <p style={{ color: "var(--text-secondary)" }}>
-          Kelola status hunian dan detail warga per rumah.
-        </p>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            gap: "1rem",
+            flexWrap: "wrap",
+          }}
+        >
+          <div>
+            <h1 style={{ fontSize: "2rem", fontWeight: "800" }}>
+              Manajemen Rumah
+            </h1>
+            <p style={{ color: "var(--text-secondary)" }}>
+              Kelola status hunian dan detail warga per rumah.
+            </p>
+          </div>
+
+          <button
+            className="btn btn-primary"
+            onClick={() => setShowCreateModal(true)}
+          >
+            <Plus size={18} />
+            Tambah Rumah
+          </button>
+        </div>
       </header>
 
       <div
@@ -364,7 +428,12 @@ const Houses = () => {
         >
           <div
             className="glass-card"
-            style={{ width: "100%", maxWidth: "400px", background: "var(--glass-bg)", margin: "1rem" }}
+            style={{
+              width: "100%",
+              maxWidth: "400px",
+              background: "var(--glass-bg)",
+              margin: "1rem",
+            }}
           >
             <h2 style={{ marginBottom: "1.5rem" }}>
               Assign Penghuni - Rumah {selectedHouse.house_number}
@@ -425,6 +494,82 @@ const Houses = () => {
           </div>
         </div>
       )}
+
+      {showCreateModal && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(15, 20, 16, 0.4)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 100,
+          }}
+        >
+          <div
+            className="glass-card"
+            style={{
+              width: "100%",
+              maxWidth: "420px",
+              background: "var(--glass-bg)",
+              margin: "1rem",
+            }}
+          >
+            <h2 style={{ marginBottom: "1.5rem" }}>Tambah Rumah</h2>
+            <form
+              onSubmit={handleCreate}
+              style={{ display: "flex", flexDirection: "column", gap: "1rem" }}
+            >
+              <div>
+                <label>Nomor Rumah</label>
+                <input
+                  type="text"
+                  required
+                  value={createData.house_number}
+                  onChange={(e) =>
+                    setCreateData({
+                      ...createData,
+                      house_number: e.target.value,
+                    })
+                  }
+                  placeholder="Contoh: A-01"
+                />
+              </div>
+              <div>
+                <label>Status Awal</label>
+                <select
+                  value={createData.status}
+                  onChange={(e) =>
+                    setCreateData({ ...createData, status: e.target.value })
+                  }
+                >
+                  <option value="tidak_dihuni">Tidak Dihuni</option>
+                  <option value="dihuni">Dihuni</option>
+                </select>
+              </div>
+              <div style={{ display: "flex", gap: "1rem", marginTop: "1rem" }}>
+                <button
+                  type="submit"
+                  className="btn btn-primary"
+                  style={{ flex: 1 }}
+                  disabled={submitting}
+                >
+                  {submitting ? "Menyimpan..." : "Simpan"}
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-outline"
+                  style={{ flex: 1 }}
+                  onClick={() => setShowCreateModal(false)}
+                >
+                  Batal
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
       {showDetailModal && selectedResident && (
         <div
           style={{
@@ -439,54 +584,129 @@ const Houses = () => {
         >
           <div
             className="glass-card"
-            style={{ width: "100%", maxWidth: "500px", background: "var(--glass-bg)", margin: "1rem", maxHeight: "90vh", overflowY: "auto" }}
+            style={{
+              width: "100%",
+              maxWidth: "500px",
+              background: "var(--glass-bg)",
+              margin: "1rem",
+              maxHeight: "90vh",
+              overflowY: "auto",
+            }}
           >
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: "1.5rem",
+              }}
+            >
               <h2 style={{ margin: 0 }}>Detail Penghuni</h2>
-              <button 
-                className="btn btn-outline" 
-                style={{ padding: "0.25rem 0.5rem" }} 
+              <button
+                className="btn btn-outline"
+                style={{ padding: "0.25rem 0.5rem" }}
                 onClick={() => setShowDetailModal(false)}
               >
                 Tutup
               </button>
             </div>
-            
-            <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
+
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: "1.5rem",
+              }}
+            >
               {selectedResident.ktp_photo && (
                 <div style={{ textAlign: "center" }}>
-                  <p style={{ fontWeight: "600", marginBottom: "0.5rem", color: "var(--text-secondary)" }}>Foto KTP</p>
-                  <div 
-                    onClick={() => setZoomedPhoto(`${STORAGE_URL}/${selectedResident.ktp_photo}`)}
+                  <p
+                    style={{
+                      fontWeight: "600",
+                      marginBottom: "0.5rem",
+                      color: "var(--text-secondary)",
+                    }}
+                  >
+                    Foto KTP
+                  </p>
+                  <div
+                    onClick={() =>
+                      setZoomedPhoto(
+                        `${STORAGE_URL}/${selectedResident.ktp_photo}`,
+                      )
+                    }
                     title="Klik untuk memperbesar"
                     style={{ cursor: "zoom-in" }}
                   >
-                    <img 
-                      src={`${STORAGE_URL}/${selectedResident.ktp_photo}`} 
-                      alt="KTP" 
-                      style={{ width: "100%", maxHeight: "250px", objectFit: "contain", borderRadius: "0.5rem", border: "1px solid var(--glass-border)" }}
+                    <img
+                      src={`${STORAGE_URL}/${selectedResident.ktp_photo}`}
+                      alt="KTP"
+                      style={{
+                        width: "100%",
+                        maxHeight: "250px",
+                        objectFit: "contain",
+                        borderRadius: "0.5rem",
+                        border: "1px solid var(--glass-border)",
+                      }}
                     />
                   </div>
                 </div>
               )}
-              
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1.5fr", gap: "1rem" }}>
-                <span style={{ fontWeight: "600", color: "var(--text-secondary)" }}>Nama Lengkap:</span>
-                <span>{selectedResident.full_name}</span>
-                
-                <span style={{ fontWeight: "600", color: "var(--text-secondary)" }}>Status Hunian:</span>
-                <span className={`badge ${selectedResident.resident_status === "tetap" ? "badge-success" : "badge-warning"}`} style={{ alignSelf: "start" }}>
-                  {selectedResident.resident_status === "tetap" ? "Tetap" : "Kontrak"}
+
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr 1.5fr",
+                  gap: "1rem",
+                }}
+              >
+                <span
+                  style={{ fontWeight: "600", color: "var(--text-secondary)" }}
+                >
+                  Nama Lengkap:
                 </span>
-                
-                <span style={{ fontWeight: "600", color: "var(--text-secondary)" }}>No. Telepon:</span>
-                <span style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                <span>{selectedResident.full_name}</span>
+
+                <span
+                  style={{ fontWeight: "600", color: "var(--text-secondary)" }}
+                >
+                  Status Hunian:
+                </span>
+                <span
+                  className={`badge ${selectedResident.resident_status === "tetap" ? "badge-success" : "badge-warning"}`}
+                  style={{ alignSelf: "start" }}
+                >
+                  {selectedResident.resident_status === "tetap"
+                    ? "Tetap"
+                    : "Kontrak"}
+                </span>
+
+                <span
+                  style={{ fontWeight: "600", color: "var(--text-secondary)" }}
+                >
+                  No. Telepon:
+                </span>
+                <span
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "0.5rem",
+                  }}
+                >
                   <Phone size={14} />
                   {selectedResident.phone_number}
                 </span>
-                
-                <span style={{ fontWeight: "600", color: "var(--text-secondary)" }}>Status Pernikahan:</span>
-                <span>{selectedResident.marital_status === "menikah" ? "Menikah" : "Belum Menikah"}</span>
+
+                <span
+                  style={{ fontWeight: "600", color: "var(--text-secondary)" }}
+                >
+                  Status Pernikahan:
+                </span>
+                <span>
+                  {selectedResident.marital_status === "menikah"
+                    ? "Menikah"
+                    : "Belum Menikah"}
+                </span>
               </div>
             </div>
           </div>
