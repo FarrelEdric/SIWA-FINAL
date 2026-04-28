@@ -18,6 +18,7 @@ import {
 import "./styles/global.css";
 
 import perumahanImage from "./assets/perumahan.png";
+import siwaLogo from "./assets/siwa logo.png";
 
 // Pages (to be created)
 import Dashboard from "./pages/Dashboard";
@@ -51,6 +52,19 @@ const SidebarLink = ({ to, icon: Icon, children, onClick }) => {
     </Link>
   );
 };
+
+const SidebarLogo = () => (
+  <img
+    src={siwaLogo}
+    alt="SIWA"
+    style={{
+      height: "28px",
+      width: "auto",
+      display: "block",
+      objectFit: "contain",
+    }}
+  />
+);
 
 const Navbar = () => {
   const location = useLocation();
@@ -106,9 +120,24 @@ const Navbar = () => {
 function App() {
   const [sidebarOpen, setSidebarOpen] = React.useState(false);
 
+  React.useEffect(() => {
+    let link = document.querySelector('link[rel="icon"]');
+
+    if (!link) {
+      link = document.createElement("link");
+      link.rel = "icon";
+      document.head.appendChild(link);
+    }
+
+    link.type = "image/png";
+    link.href = siwaLogo;
+  }, []);
+
   return (
     <Router>
-      <div style={{ display: "flex", minHeight: "100vh", position: "relative" }}>
+      <div
+        style={{ display: "flex", minHeight: "100vh", position: "relative" }}
+      >
         {/* Sidebar Overlay for mobile */}
         {sidebarOpen && (
           <div
@@ -127,47 +156,78 @@ function App() {
         {/* Sidebar */}
         <aside className={`sidebar ${sidebarOpen ? "open" : ""}`}>
           <div className="sidebar-header">
-            <h2
-              style={{
-                fontSize: "0.875rem",
-                color: "var(--text-secondary)",
-                textTransform: "uppercase",
-                letterSpacing: "0.1em",
-                margin: 0,
-              }}
-            >
-              Menu Utama
-            </h2>
-            <button 
-              className="mobile-only" 
+            <SidebarLogo />
+            <button
+              className="mobile-only"
               onClick={() => setSidebarOpen(false)}
-              style={{ background: "none", border: "none", color: "var(--text-secondary)", cursor: "pointer", display: "flex", alignItems: "center" }}
+              style={{
+                background: "none",
+                border: "none",
+                color: "var(--text-secondary)",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+              }}
             >
               <X size={24} />
             </button>
           </div>
-          
-          <div style={{ padding: "0 1rem", display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-            <SidebarLink to="/" icon={LayoutDashboard} onClick={() => setSidebarOpen(false)}>
+
+          <div
+            style={{
+              padding: "0 1rem",
+              display: "flex",
+              flexDirection: "column",
+              gap: "0.5rem",
+            }}
+          >
+            <SidebarLink
+              to="/"
+              icon={LayoutDashboard}
+              onClick={() => setSidebarOpen(false)}
+            >
               Dashboard
             </SidebarLink>
-            <SidebarLink to="/residents" icon={Users} onClick={() => setSidebarOpen(false)}>
+            <SidebarLink
+              to="/residents"
+              icon={Users}
+              onClick={() => setSidebarOpen(false)}
+            >
               Penghuni
             </SidebarLink>
-            <SidebarLink to="/houses" icon={Home} onClick={() => setSidebarOpen(false)}>
+            <SidebarLink
+              to="/houses"
+              icon={Home}
+              onClick={() => setSidebarOpen(false)}
+            >
               Rumah
             </SidebarLink>
-            <SidebarLink to="/payments" icon={CreditCard} onClick={() => setSidebarOpen(false)}>
+            <SidebarLink
+              to="/payments"
+              icon={CreditCard}
+              onClick={() => setSidebarOpen(false)}
+            >
               Pembayaran
             </SidebarLink>
-            <SidebarLink to="/expenses" icon={Receipt} onClick={() => setSidebarOpen(false)}>
+            <SidebarLink
+              to="/expenses"
+              icon={Receipt}
+              onClick={() => setSidebarOpen(false)}
+            >
               Pengeluaran
             </SidebarLink>
           </div>
         </aside>
 
         {/* Main Content */}
-        <main style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0 }}>
+        <main
+          style={{
+            flex: 1,
+            display: "flex",
+            flexDirection: "column",
+            minWidth: 0,
+          }}
+        >
           <nav
             className="glass-card"
             style={{
@@ -183,10 +243,15 @@ function App() {
             }}
           >
             <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-              <button 
+              <button
                 className="mobile-only"
                 onClick={() => setSidebarOpen(true)}
-                style={{ background: "none", border: "none", color: "var(--primary)", cursor: "pointer" }}
+                style={{
+                  background: "none",
+                  border: "none",
+                  color: "var(--primary)",
+                  cursor: "pointer",
+                }}
               >
                 <Menu size={24} />
               </button>
@@ -223,7 +288,10 @@ function App() {
             </div>
           </nav>
 
-          <div className="main-content-wrapper" style={{ padding: "2rem", flex: 1 }}>
+          <div
+            className="main-content-wrapper"
+            style={{ padding: "2rem", flex: 1 }}
+          >
             <Routes>
               <Route path="/" element={<Dashboard />} />
               <Route path="/residents" element={<Residents />} />
