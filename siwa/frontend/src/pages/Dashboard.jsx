@@ -90,7 +90,16 @@ const Dashboard = () => {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "2rem" }}>
-      <header>
+      <header
+        className="glass-card"
+        style={{
+          padding: "1.5rem 2rem",
+          backgroundImage: `linear-gradient(rgba(255,255,255,0.85), rgba(255,255,255,0.85)), url(/rumah.png)`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          border: "1px solid var(--glass-border)",
+        }}
+      >
         <h1 style={{ fontSize: "2rem", fontWeight: "800" }}>
           Dashboard Overview
         </h1>

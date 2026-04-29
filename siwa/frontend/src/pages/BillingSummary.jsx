@@ -96,95 +96,153 @@ const BillingSummary = () => {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "2rem" }}>
-      <header style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "1rem" }}>
-        <div>
-          <h1 style={{ fontSize: "2rem", fontWeight: "800" }}>Laporan Tagihan Bulanan</h1>
-          <p style={{ color: "var(--text-secondary)" }}>Pantau status pembayaran warga per periode.</p>
+      <header
+        className="glass-card"
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          flexWrap: "wrap",
+          gap: "1.5rem",
+          padding: "1.5rem 2rem",
+          backgroundImage: `linear-gradient(rgba(255,255,255,0.85), rgba(255,255,255,0.85)), url(/rumah.png)`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          border: "1px solid var(--glass-border)",
+        }}
+      >
+        <div style={{ minWidth: "250px" }}>
+          <h1 style={{ fontSize: "2.25rem", fontWeight: "900", letterSpacing: "-0.025em" }}>
+            Laporan Tagihan
+          </h1>
+          <p style={{ color: "var(--text-secondary)", fontSize: "1rem", marginTop: "0.25rem" }}>
+            Ringkasan status iuran warga periode ini.
+          </p>
         </div>
 
-        <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap", alignItems: "center" }}>
-          <div className="glass-card" style={{ 
-            display: "flex", 
-            alignItems: "center", 
-            gap: "0.75rem", 
-            padding: "0.6rem 1.25rem",
-            boxShadow: "0 4px 20px rgba(0,0,0,0.04)",
-            border: "1px solid var(--glass-border)",
-            transition: "all 0.2s"
-          }}>
-            <Search size={18} style={{ color: "var(--text-secondary)" }} />
-            <input 
-              type="text" 
-              placeholder="Cari data laporan..."
+        <div
+          style={{
+            display: "flex",
+            gap: "1rem",
+            flexWrap: "wrap",
+            alignItems: "center",
+            flex: "1 1 auto",
+            justifyContent: "flex-end"
+          }}
+        >
+          <div
+            className="glass-card"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "0.75rem",
+              padding: "0 1.25rem",
+              borderRadius: "1rem",
+              flex: "1 1 300px",
+              maxWidth: "400px",
+              height: "52px",
+              background: "rgba(255, 255, 255, 0.8)",
+              border: "1px solid var(--glass-border)",
+              boxShadow: "0 4px 15px rgba(0,0,0,0.02)"
+            }}
+          >
+            <Search size={20} style={{ color: "var(--primary)" }} />
+            <input
+              type="text"
+              placeholder="Cari nomor rumah, nama, atau status..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              style={{ border: "none", background: "transparent", outline: "none", width: "180px", fontSize: "0.95rem", color: "var(--text-primary)" }}
+              style={{
+                border: "none",
+                background: "transparent",
+                outline: "none",
+                width: "100%",
+                fontSize: "1rem",
+                color: "var(--text-primary)",
+                fontWeight: "500"
+              }}
             />
           </div>
 
-          <div className="glass-card" style={{ 
-            display: "flex", 
-            gap: "0.5rem", 
-            padding: "0.4rem 1.25rem", 
-            alignItems: "center",
-            boxShadow: "0 4px 20px rgba(0,0,0,0.04)",
-            border: "1px solid var(--glass-border)"
-          }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", paddingRight: "0.75rem", borderRight: "1px solid var(--glass-border)" }}>
-              <Calendar size={18} style={{ color: "var(--primary)" }} />
-              <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
-                <select 
-                  value={month} 
-                  onChange={(e) => setMonth(Number(e.target.value))}
-                  style={{ 
-                    padding: "0.4rem 1.5rem 0.4rem 0.5rem", 
-                    border: "none", 
-                    background: "transparent", 
-                    fontWeight: "700",
-                    appearance: "none",
-                    cursor: "pointer",
-                    fontSize: "0.95rem",
-                    color: "var(--text-primary)",
-                    outline: "none"
-                  }}
-                >
-                  {Array.from({ length: 12 }, (_, i) => (
-                    <option key={i + 1} value={i + 1}>
-                      {new Date(0, i).toLocaleString('id-ID', { month: 'long' })}
-                    </option>
-                  ))}
-                </select>
-                <ChevronDown size={14} style={{ position: "absolute", right: 0, pointerEvents: "none", color: "var(--text-secondary)" }} />
-              </div>
-            </div>
-
-            <div style={{ position: "relative", display: "flex", alignItems: "center", paddingLeft: "0.25rem" }}>
-              <select 
-                value={year} 
-                onChange={(e) => setYear(Number(e.target.value))}
-                style={{ 
-                  padding: "0.4rem 1.5rem 0.4rem 0.5rem", 
-                  border: "none", 
-                  background: "transparent", 
+          <div
+            className="glass-card"
+            style={{
+              display: "flex",
+              gap: "0.5rem",
+              padding: "0 1.25rem",
+              alignItems: "center",
+              borderRadius: "1rem",
+              height: "52px",
+              background: "rgba(255, 255, 255, 0.8)",
+              border: "1px solid var(--glass-border)"
+            }}
+          >
+            <Calendar size={20} style={{ color: "var(--primary)" }} />
+            <div style={{ display: "flex", alignItems: "center", height: "100%" }}>
+              <select
+                value={month}
+                onChange={(e) => setMonth(Number(e.target.value))}
+                style={{
+                  padding: "0 0.5rem",
+                  border: "none",
+                  background: "transparent",
                   fontWeight: "700",
-                  appearance: "none",
                   cursor: "pointer",
-                  fontSize: "0.95rem",
-                  color: "var(--text-primary)",
-                  outline: "none"
+                  fontSize: "1rem",
+                  outline: "none",
+                  width: "auto",
+                  height: "100%"
                 }}
               >
-                {[2024, 2025, 2026].map(y => (
-                  <option key={y} value={y}>{y}</option>
+                {Array.from({ length: 12 }, (_, i) => (
+                  <option key={i + 1} value={i + 1}>
+                    {new Date(0, i).toLocaleString("id-ID", { month: "long" })}
+                  </option>
                 ))}
               </select>
-              <ChevronDown size={14} style={{ position: "absolute", right: 0, pointerEvents: "none", color: "var(--text-secondary)" }} />
+              <span style={{ color: "var(--glass-border)", margin: "0 0.25rem" }}>|</span>
+              <select
+                value={year}
+                onChange={(e) => setYear(Number(e.target.value))}
+                style={{
+                  padding: "0 0.5rem",
+                  border: "none",
+                  background: "transparent",
+                  fontWeight: "700",
+                  cursor: "pointer",
+                  fontSize: "1rem",
+                  outline: "none",
+                  width: "auto",
+                  height: "100%"
+                }}
+              >
+                {[2024, 2025, 2026].map((y) => (
+                  <option key={y} value={y}>
+                    {y}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
 
-          <button className="btn btn-primary" onClick={handleDownloadExcel} disabled={filteredSummary.length === 0} style={{ padding: "0.75rem 1.5rem", borderRadius: "1rem" }}>
-            <FileDown size={18} />
-            <span>Download Excel</span>
+          <button
+            className="btn btn-primary"
+            onClick={handleDownloadExcel}
+            disabled={filteredSummary.length === 0}
+            style={{
+              height: "52px",
+              padding: "0 1.75rem",
+              borderRadius: "1rem",
+              display: "flex",
+              alignItems: "center",
+              gap: "0.75rem",
+              boxShadow: "0 10px 20px rgba(79, 139, 101, 0.2)",
+              fontSize: "1rem",
+              fontWeight: "700"
+            }}
+          >
+            <FileDown size={22} />
+            <span>Export Excel</span>
           </button>
         </div>
       </header>
@@ -261,50 +319,50 @@ const BillingSummary = () => {
         </div>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "1.5rem" }}>
-        <div className="glass-card" style={{ display: "flex", alignItems: "center", gap: "1.25rem", padding: "1.5rem", borderLeft: "4px solid var(--primary)" }}>
-          <div style={{ padding: "1rem", background: "var(--primary-soft)", borderRadius: "1rem", color: "var(--primary)" }}>
-            <ClipboardList size={28} />
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "1.5rem" }}>
+        <div className="glass-card" style={{ display: "flex", alignItems: "center", gap: "1.25rem", padding: "1.5rem", borderLeft: "4px solid var(--primary)", background: "rgba(255, 255, 255, 0.8)" }}>
+          <div style={{ padding: "1rem", background: "var(--primary-soft)", borderRadius: "1.25rem", color: "var(--primary)" }}>
+            <ClipboardList size={32} />
           </div>
           <div>
-            <p style={{ color: "var(--text-secondary)", fontSize: "0.875rem", fontWeight: "500", marginBottom: "0.25rem" }}>Total Rumah Wajib Iuran</p>
+            <p style={{ color: "var(--text-secondary)", fontSize: "0.9rem", fontWeight: "600", marginBottom: "0.25rem" }}>Wajib Iuran</p>
             {loading ? (
               <div className="skeleton" style={{ height: "2.5rem", width: "100px", borderRadius: "0.5rem" }}></div>
             ) : (
-              <h3 style={{ fontSize: "1.75rem", fontWeight: "800", color: "var(--text-strong)" }}>
-                {summary.filter(s => s.must_pay).length} <span style={{ fontSize: "1rem", fontWeight: "500", color: "var(--text-secondary)" }}>Unit</span>
+              <h3 style={{ fontSize: "2rem", fontWeight: "900", color: "var(--text-strong)" }}>
+                {summary.filter(s => s.must_pay).length} <span style={{ fontSize: "1.1rem", fontWeight: "600", color: "var(--text-secondary)" }}>Unit</span>
               </h3>
             )}
           </div>
         </div>
 
-        <div className="glass-card" style={{ display: "flex", alignItems: "center", gap: "1.25rem", padding: "1.5rem", borderLeft: "4px solid var(--success)" }}>
-          <div style={{ padding: "1rem", background: "rgba(16, 185, 129, 0.1)", borderRadius: "1rem", color: "var(--success)" }}>
-            <CheckCircle size={28} />
+        <div className="glass-card" style={{ display: "flex", alignItems: "center", gap: "1.25rem", padding: "1.5rem", borderLeft: "4px solid var(--success)", background: "rgba(255, 255, 255, 0.8)" }}>
+          <div style={{ padding: "1rem", background: "rgba(16, 185, 129, 0.1)", borderRadius: "1.25rem", color: "var(--success)" }}>
+            <CheckCircle size={32} />
           </div>
           <div>
-            <p style={{ color: "var(--text-secondary)", fontSize: "0.875rem", fontWeight: "500", marginBottom: "0.25rem" }}>Sudah Lunas Semua</p>
+            <p style={{ color: "var(--text-secondary)", fontSize: "0.9rem", fontWeight: "600", marginBottom: "0.25rem" }}>Lunas Semua</p>
             {loading ? (
               <div className="skeleton" style={{ height: "2.5rem", width: "100px", borderRadius: "0.5rem" }}></div>
             ) : (
-              <h3 style={{ fontSize: "1.75rem", fontWeight: "800", color: "var(--text-strong)" }}>
-                {summary.filter(s => s.must_pay && s.satpam === 'lunas' && s.kebersihan === 'lunas').length} <span style={{ fontSize: "1rem", fontWeight: "500", color: "var(--text-secondary)" }}>Unit</span>
+              <h3 style={{ fontSize: "2rem", fontWeight: "900", color: "var(--success)" }}>
+                {summary.filter(s => s.must_pay && s.satpam === 'lunas' && s.kebersihan === 'lunas').length} <span style={{ fontSize: "1.1rem", fontWeight: "600", color: "var(--text-secondary)" }}>Unit</span>
               </h3>
             )}
           </div>
         </div>
 
-        <div className="glass-card" style={{ display: "flex", alignItems: "center", gap: "1.25rem", padding: "1.5rem", borderLeft: "4px solid var(--danger)" }}>
-          <div style={{ padding: "1rem", background: "rgba(239, 68, 68, 0.1)", borderRadius: "1rem", color: "var(--danger)" }}>
-            <XCircle size={28} />
+        <div className="glass-card" style={{ display: "flex", alignItems: "center", gap: "1.25rem", padding: "1.5rem", borderLeft: "4px solid var(--danger)", background: "rgba(255, 255, 255, 0.8)" }}>
+          <div style={{ padding: "1rem", background: "rgba(239, 68, 68, 0.1)", borderRadius: "1.25rem", color: "var(--danger)" }}>
+            <XCircle size={32} />
           </div>
           <div>
-            <p style={{ color: "var(--text-secondary)", fontSize: "0.875rem", fontWeight: "500", marginBottom: "0.25rem" }}>Belum Bayar (Tunggakan)</p>
+            <p style={{ color: "var(--text-secondary)", fontSize: "0.9rem", fontWeight: "600", marginBottom: "0.25rem" }}>Tunggakan</p>
             {loading ? (
               <div className="skeleton" style={{ height: "2.5rem", width: "100px", borderRadius: "0.5rem" }}></div>
             ) : (
-              <h3 style={{ fontSize: "1.75rem", fontWeight: "800", color: "var(--text-strong)" }}>
-                {summary.filter(s => s.must_pay && (s.satpam === 'belum' || s.kebersihan === 'belum')).length} <span style={{ fontSize: "1rem", fontWeight: "500", color: "var(--text-secondary)" }}>Unit</span>
+              <h3 style={{ fontSize: "2rem", fontWeight: "900", color: "var(--danger)" }}>
+                {summary.filter(s => s.must_pay && (s.satpam === 'belum' || s.kebersihan === 'belum')).length} <span style={{ fontSize: "1.1rem", fontWeight: "600", color: "var(--text-secondary)" }}>Unit</span>
               </h3>
             )}
           </div>

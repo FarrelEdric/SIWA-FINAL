@@ -19,6 +19,7 @@ import {
 import "./styles/global.css";
 
 import perumahanImage from "./assets/perumahan.png";
+import rumahImage from "./assets/rumah.png";
 import siwaLogo from "./assets/siwa logo.png";
 
 // Pages (to be created)
@@ -138,7 +139,13 @@ function App() {
   return (
     <Router>
       <div
-        style={{ display: "flex", minHeight: "100vh", position: "relative" }}
+        style={{ 
+          display: "flex", 
+          height: "100vh", 
+          overflow: "hidden",
+          position: "relative",
+          background: "#ffffff"
+        }}
       >
         {/* Sidebar Overlay for mobile */}
         {sidebarOpen && (
@@ -235,6 +242,8 @@ function App() {
             display: "flex",
             flexDirection: "column",
             minWidth: 0,
+            overflowY: "auto",
+            height: "100vh"
           }}
         >
           <nav
@@ -244,9 +253,9 @@ function App() {
               display: "flex",
               justifyContent: "space-between",
               alignItems: "center",
-              height: "80px", // Aligned with sidebar header
+              height: "80px", 
               padding: "0 2rem",
-              backgroundImage: `linear-gradient(rgba(255,255,255,0.85), rgba(255,255,255,0.85)), url(${perumahanImage})`,
+              backgroundImage: `linear-gradient(rgba(255,255,255,0.85), rgba(255,255,255,0.85)), url(${rumahImage})`,
               backgroundSize: "cover",
               backgroundPosition: "center",
             }}

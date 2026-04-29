@@ -269,12 +269,18 @@ const Residents = () => {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "2rem" }}>
       <header
+        className="glass-card"
         style={{
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
           flexWrap: "wrap",
           gap: "1rem",
+          padding: "1.5rem 2rem",
+          backgroundImage: `linear-gradient(rgba(255,255,255,0.85), rgba(255,255,255,0.85)), url(/rumah.png)`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          border: "1px solid var(--glass-border)",
         }}
       >
         <div style={{ minWidth: "200px" }}>

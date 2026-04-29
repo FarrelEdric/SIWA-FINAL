@@ -9,15 +9,15 @@
     #f8faf8 45%,
     #f2f5f2 100%
   );
-  --glass-bg: #ffffff;
-  --glass-border: #dce3dc;
-  --text-primary: #303630;
-  --text-secondary: #6f7a70;
-  --text-strong: #171a18;
-  --surface-muted: #f2f5f2;
-  --success: #3f8a62;
-  --danger: #b74a4a;
-  --warning: #9a7a35;
+  --glass-bg: rgba(255, 255, 255, 0.95);
+  --glass-border: rgba(0, 0, 0, 0.1);
+  --text-primary: #111111;
+  --text-secondary: #333333;
+  --text-strong: #000000;
+  --surface-muted: #f0f2f0;
+  --success: #2d6648;
+  --danger: #9e3a3a;
+  --warning: #7d632b;
 }
 
 * {
@@ -32,10 +32,12 @@
 }
 
 body {
-  background: var(--bg-gradient);
   color: var(--text-primary);
   min-height: 100vh;
   overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 .glass-card {
@@ -82,6 +84,21 @@ body {
 table {
   width: 100%;
   border-collapse: collapse;
+}
+
+
+label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  margin-bottom: 0.25rem;
+}
+
+h1, h2, h3, h4 {
+  font-weight: 800;
+  color: var(--text-strong);
+  letter-spacing: -0.025em;
 }
 
 th {
@@ -191,9 +208,10 @@ textarea:focus {
   transition: all 0.3s ease;
   z-index: 1001;
   flex-shrink: 0;
-  min-height: 100vh;
+  height: 100vh;
   position: sticky;
   top: 0;
+  overflow-y: auto;
 }
 
 @media (max-width: 1024px) {

@@ -44,7 +44,7 @@ class ResidentController extends Controller
             'resident_status' => 'required|in:tetap,kontrak',
             'phone_number' => 'required|string|max:20',
             'marital_status' => 'required|in:menikah,belum',
-        ]);
+        ]); 
 
         if ($request->hasFile('ktp_photo')) {
             $path = $request->file('ktp_photo')->store('ktp_photos', 'public');

@@ -9,6 +9,7 @@ import {
   Phone,
   Plus,
 } from "lucide-react";
+import { formatCurrency } from "../utils/formatCurrency";
 import Swal from "sweetalert2";
 
 const Houses = () => {
@@ -208,7 +209,16 @@ const Houses = () => {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "2rem" }}>
-      <header>
+      <header
+        className="glass-card"
+        style={{
+          padding: "1.5rem 2rem",
+          backgroundImage: `linear-gradient(rgba(255,255,255,0.85), rgba(255,255,255,0.85)), url(/rumah.png)`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          border: "1px solid var(--glass-border)",
+        }}
+      >
         <div
           style={{
             display: "flex",
@@ -652,12 +662,30 @@ const Houses = () => {
                   >
                     <span style={{ fontWeight: "600", color: "var(--text-secondary)" }}>Nama:</span>
                     <span>{selectedHouse.current_resident.full_name}</span>
-                    <span style={{ fontWeight: "600", color: "var(--text-secondary)" }}>Status:</span>
-                    <span className={`badge ${selectedHouse.current_resident.resident_status === "tetap" ? "badge-success" : "badge-warning"}`} style={{ alignSelf: 'start' }}>
-                      {selectedHouse.current_resident.resident_status === "tetap" ? "Tetap" : "Kontrak"}
-                    </span>
+                     <span style={{ fontWeight: "600", color: "var(--text-secondary)" }}>Status:</span>
+                    <div>
+                      <span 
+                        className={`badge ${selectedHouse.current_resident.resident_status === "tetap" ? "badge-success" : "badge-warning"}`}
+                        style={{ 
+                          padding: "0.4rem 1rem",
+                          borderRadius: "0.75rem",
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: "0.35rem",
+                          fontSize: "0.8rem"
+                        }}
+                      >
+                        <div style={{ 
+                          width: "6px", 
+                          height: "6px", 
+                          borderRadius: "50%", 
+                          background: selectedHouse.current_resident.resident_status === "tetap" ? "var(--success)" : "var(--warning)" 
+                        }} />
+                        {selectedHouse.current_resident.resident_status === "tetap" ? "Tetap" : "Kontrak"}
+                      </span>
+                    </div>
                     <span style={{ fontWeight: "600", color: "var(--text-secondary)" }}>Telp:</span>
-                    <span>{selectedHouse.current_resident.phone_number}</span>
+                    <span style={{ fontWeight: "500" }}>{selectedHouse.current_resident.phone_number}</span>
                   </div>
                 ) : (
                   <p style={{ fontStyle: "italic", color: "var(--text-secondary)" }}>Kosong</p>
@@ -720,7 +748,7 @@ const Houses = () => {
                           <td>
                             <span className="badge badge-success">{payment.payment_type}</span>
                           </td>
-                          <td>Rp {payment.amount?.toLocaleString('id-ID')}</td>
+                          <td>Rp {formatCurrency(payment.amount)}</td>
                           <td>
                             <span className="badge badge-success">Lunas</span>
                           </td>

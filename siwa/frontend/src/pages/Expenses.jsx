@@ -293,12 +293,18 @@ const Expenses = () => {
     <div style={{ display: "flex", flexDirection: "column", gap: "2rem" }}>
       {/* Summary cards removed per user request */}
       <header
+        className="glass-card"
         style={{
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
           gap: "1rem",
           flexWrap: "wrap",
+          padding: "1.5rem 2rem",
+          backgroundImage: `linear-gradient(rgba(255,255,255,0.85), rgba(255,255,255,0.85)), url(/rumah.png)`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          border: "1px solid var(--glass-border)",
         }}
       >
         <div>
@@ -450,11 +456,11 @@ const Expenses = () => {
                     <td>
                       {e.recurring ? (
                         <span className="badge" style={{ background: "rgba(79, 139, 101, 0.1)", color: "var(--primary)", display: "flex", alignItems: "center", gap: "0.25rem", width: "fit-content" }}>
-                          <Repeat size={12} /> Rutin
+                          Rutin
                         </span>
                       ) : (
                         <span className="badge" style={{ background: "rgba(59, 130, 246, 0.1)", color: "#3b82f6", display: "flex", alignItems: "center", gap: "0.25rem", width: "fit-content" }}>
-                          <Zap size={12} /> Sekali
+                          Sekali
                         </span>
                       )}
                     </td>
@@ -500,7 +506,9 @@ const Expenses = () => {
             alignItems: "center",
             gap: "1rem",
             flexWrap: "wrap",
-            marginTop: "1rem",
+            padding: "1.25rem 1.5rem",
+            background: "rgba(0,0,0,0.02)",
+            borderTop: "1px solid var(--glass-border)"
           }}
         >
           <div style={{ color: "var(--text-secondary)", fontSize: "0.875rem" }}>
