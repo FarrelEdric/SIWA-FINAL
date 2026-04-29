@@ -102,36 +102,12 @@ const Dashboard = () => {
           border: "1px solid var(--glass-border)",
         }}
       >
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "1rem" }}>
-          <div>
-            <h1 style={{ fontSize: "2rem", fontWeight: "800" }}>
-              Dashboard Overview
-            </h1>
-            <p style={{ color: "var(--text-secondary)" }}>
-              Welcome back, Pak RT. Pelajari laporan keuangan lingkungan Anda di sini.
-            </p>
-          </div>
-          
-          <div className="glass-card" style={{ 
-            display: "flex", 
-            gap: "0.75rem", 
-            padding: "0.6rem 1.25rem", 
-            alignItems: "center",
-            boxShadow: "0 4px 20px rgba(0,0,0,0.04)",
-            border: "1px solid var(--glass-border)",
-            background: "rgba(255,255,255,0.9)"
-          }}>
-            <TrendingUp size={18} style={{ color: "var(--primary)" }} />
-            <span style={{ fontWeight: "600", color: "var(--text-secondary)", fontSize: "0.9rem" }}>Tahun Laporan:</span>
-            <select 
-              value={selectedYear} 
-              onChange={(e) => setSelectedYear(Number(e.target.value))} 
-              style={{ border: "none", background: "transparent", fontWeight: "800", outline: "none", cursor: "pointer", fontSize: "1rem", color: "var(--text-strong)" }}
-            >
-              {[2026, 2025, 2024].map(y => <option key={y} value={y}>{y}</option>)}
-            </select>
-          </div>
-        </div>
+        <h1 style={{ fontSize: "2rem", fontWeight: "800" }}>
+          Dashboard Overview
+        </h1>
+        <p style={{ color: "var(--text-secondary)" }}>
+          Welcome back, Pak RT. Pelajari laporan keuangan lingkungan Anda di sini.
+        </p>
       </header>
 
       <div style={{ display: "flex", gap: "1.5rem", flexWrap: "wrap" }}>
@@ -171,17 +147,40 @@ const Dashboard = () => {
         <div className="glass-card" style={{ height: "450px", padding: "1.5rem" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
             <div>
-              <h3 style={{ fontSize: "1.25rem", fontWeight: "800" }}>Cashflow Bulanan ({selectedYear})</h3>
+              <h3 style={{ fontSize: "1.25rem", fontWeight: "800" }}>Cashflow Bulanan</h3>
               <p style={{ color: "var(--text-secondary)", fontSize: "0.85rem" }}>Laporan dimulai dari Januari {selectedYear}</p>
             </div>
-            <div style={{ display: "flex", gap: "1rem" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                <div style={{ width: "12px", height: "12px", borderRadius: "3px", background: "#4f8b65" }}></div>
-                <span style={{ fontSize: "0.85rem", fontWeight: "600" }}>Pemasukan</span>
+            
+            <div style={{ display: "flex", alignItems: "center", gap: "1.5rem" }}>
+              {/* Year Filter Inside Chart Card */}
+              <div style={{ 
+                display: "flex", 
+                alignItems: "center", 
+                gap: "0.5rem", 
+                padding: "0.4rem 0.75rem", 
+                background: "var(--surface-muted)", 
+                borderRadius: "0.75rem",
+                border: "1px solid var(--glass-border)"
+              }}>
+                <span style={{ fontSize: "0.85rem", fontWeight: "600", color: "var(--text-secondary)" }}>Tahun:</span>
+                <select 
+                  value={selectedYear} 
+                  onChange={(e) => setSelectedYear(Number(e.target.value))}
+                  style={{ border: "none", background: "transparent", fontWeight: "800", outline: "none", cursor: "pointer", color: "var(--primary)" }}
+                >
+                  {[2026, 2025, 2024].map(y => <option key={y} value={y}>{y}</option>)}
+                </select>
               </div>
-              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                <div style={{ width: "12px", height: "12px", borderRadius: "3px", background: "#b74a4a" }}></div>
-                <span style={{ fontSize: "0.85rem", fontWeight: "600" }}>Pengeluaran</span>
+
+              <div style={{ display: "flex", gap: "1rem" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                  <div style={{ width: "12px", height: "12px", borderRadius: "3px", background: "#4f8b65" }}></div>
+                  <span style={{ fontSize: "0.85rem", fontWeight: "600" }}>Pemasukan</span>
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                  <div style={{ width: "12px", height: "12px", borderRadius: "3px", background: "#b74a4a" }}></div>
+                  <span style={{ fontSize: "0.85rem", fontWeight: "600" }}>Pengeluaran</span>
+                </div>
               </div>
             </div>
           </div>
