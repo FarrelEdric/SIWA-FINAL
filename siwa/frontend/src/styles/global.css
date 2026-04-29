@@ -227,3 +227,19 @@ textarea:focus {
     padding: 0 1.25rem;
   }
 }
+/* Skeleton Loading */
+@keyframes skeleton-loading {
+  0% { background-position: 100% 50%; }
+  100% { background-position: 0 50%; }
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--surface-muted) 25%,
+    #e8eee8 50%,
+    var(--surface-muted) 75%
+  );
+  background-size: 400% 100%;
+  animation: skeleton-loading 1.5s infinite;
+}

@@ -22,17 +22,59 @@ class ExpenseController extends Controller
             });
         }
 
+        if ($request->has('month') && $request->query('month') != '') {
+            $query->whereMonth('expense_date', $request->query('month'));
+        }
+        if ($request->has('year') && $request->query('year') != '') {
+            $query->whereYear('expense_date', $request->query('year'));
+        }
+
+        $month = $request->query('month');
+        $year = $request->query('year');
+
+        $incomeQuery = \App\Models\Payment::query();
+        if ($month) $incomeQuery->whereMonth('payment_date', $month);
+        if ($year) $incomeQuery->whereYear('payment_date', $year);
+        $totalIncome = $incomeQuery->sum('amount');
+
+        $totalGlobalIncome = \App\Models\Payment::sum('amount');
+        $totalGlobalExpense = Expense::sum('amount');
+        $globalBalance = $totalGlobalIncome - $totalGlobalExpense;
+
+        $totalPeriodExpense = (clone $query)->sum('amount');
+
         // Backward compatible: without pagination params, return full list.
         if (!$request->has('page') && !$request->has('per_page')) {
-            return response()->json($query->orderByDesc('id')->get());
+            $items = $query->orderByDesc('id')->get();
+            return response()->json([
+                'data' => $items,
+                'summary' => [
+                    'total_income' => (float)$totalIncome,
+                    'total_expense' => (float)$totalPeriodExpense,
+                    'global_balance' => (float)$globalBalance,
+                ]
+            ]);
         }
 
         $perPage = (int) $request->query('per_page', 10);
         $perPage = max(1, min($perPage, 100));
 
-        return response()->json(
-            $query->orderByDesc('id')->paginate($perPage)
-        );
+        $paginated = $query->orderByDesc('id')->paginate($perPage);
+
+        return response()->json([
+            'data' => $paginated->items(),
+            'meta' => [
+                'current_page' => $paginated->currentPage(),
+                'last_page' => $paginated->lastPage(),
+                'per_page' => $paginated->perPage(),
+                'total' => $paginated->total(),
+            ],
+            'summary' => [
+                'total_income' => (float)$totalIncome,
+                'total_expense' => (float)$totalPeriodExpense,
+                'global_balance' => (float)$globalBalance,
+            ]
+        ]);
     }
 
     public function store(Request $request)

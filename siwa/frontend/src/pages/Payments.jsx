@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { paymentService, houseService } from "../services/api";
-import { CreditCard, Search } from "lucide-react";
+import { CreditCard, Search, Eye } from "lucide-react";
 import Swal from "sweetalert2";
 import { formatCurrency } from "../utils/formatCurrency";
 
@@ -19,9 +19,15 @@ const Payments = () => {
     house_id: "",
     resident_id: "",
     payment_type: "satpam",
-    amount: 0,
+    amount: "",
     payment_period_start: "",
     payment_period_end: "",
+    description: "",
+  });
+  const [paymentOptions, setPaymentOptions] = useState({
+    satpam: true,
+    kebersihan: false,
+    lainnya: false
   });
   const [selectedIds, setSelectedIds] = useState([]);
 
@@ -148,7 +154,7 @@ const Payments = () => {
         ...formData,
         house_id: "",
         resident_id: "",
-        amount: 0,
+        amount: "",
       });
     }
   };
@@ -249,39 +255,93 @@ const Payments = () => {
     }
   };
 
+  const handleShowDetail = (p) => {
+    Swal.fire({
+      title: "Detail Pembayaran",
+      html: `
+        <div style="text-align: left; padding: 10px; font-family: 'Inter', sans-serif;">
+          <div style="display: grid; grid-template-columns: 120px 1fr; gap: 8px; margin-bottom: 15px;">
+            <span style="color: #666">Rumah</span>
+            <span style="font-weight: 600">: ${p.house.house_number}</span>
+            
+            <span style="color: #666">Penghuni</span>
+            <span style="font-weight: 600">: ${p.resident.full_name}</span>
+            
+            <span style="color: #666">Jenis Iuran</span>
+            <span style="font-weight: 600">: ${p.payment_type.toUpperCase()}</span>
+            
+            ${p.description ? `
+              <span style="color: #666">Keterangan</span>
+              <span style="font-weight: 600">: ${p.description}</span>
+            ` : ''}
+            
+            <span style="color: #666">Jumlah</span>
+            <span style="font-weight: 600; color: var(--primary)">: Rp ${formatCurrency(p.amount)}</span>
+            
+            <span style="color: #666">Periode</span>
+            <span style="font-weight: 600">: ${p.payment_period_start} s/d ${p.payment_period_end}</span>
+            
+            <span style="color: #666">Tgl Bayar</span>
+            <span style="font-weight: 600">: ${new Date(p.payment_date).toLocaleString('id-ID')}</span>
+          </div>
+        </div>
+      `,
+      icon: "info",
+      confirmButtonText: "Tutup",
+      confirmButtonColor: "var(--primary)"
+    });
+  };
+
+  const calculateTotalAmount = () => {
+    let total = 0;
+    if (paymentOptions.satpam) total += 100000;
+    if (paymentOptions.kebersihan) total += 15000;
+    if (paymentOptions.lainnya) total += Number(formData.amount || 0);
+    return total;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (submitting) return;
+
+    const selectedTypes = [];
+    if (paymentOptions.satpam) selectedTypes.push('satpam');
+    if (paymentOptions.kebersihan) selectedTypes.push('kebersihan');
+    if (paymentOptions.lainnya) selectedTypes.push('lainnya');
+
+    if (selectedTypes.length === 0) {
+      await Swal.fire("Peringatan", "Pilih minimal satu jenis iuran.", "warning");
+      return;
+    }
+
     try {
       setSubmitting(true);
-      await paymentService.create(formData);
+      
+      for (const type of selectedTypes) {
+        let payload = { ...formData, payment_type: type };
+        
+        if (type === 'satpam') payload.amount = 100000;
+        if (type === 'kebersihan') payload.amount = 15000;
+        // 'lainnya' already has amount from formData
+
+        await paymentService.create(payload);
+      }
+
       await Swal.fire({
         icon: "success",
         title: "Berhasil",
         text: "Pembayaran berhasil dicatat.",
-        timer: 5000,
+        timer: 3000,
         timerProgressBar: true,
       });
       setShowModal(false);
-      // Refresh first page after new payment
-      const res = await paymentService.getAll({
-        page: 1,
-        per_page: perPage,
-        q: searchTerm,
-      });
-      const { items, meta } = normalizeListResponse(res.data);
-      setPayments(items);
-      setPage(meta.currentPage);
-      setLastPage(meta.lastPage);
-      setTotal(meta.total);
+      fetchPayments();
     } catch (error) {
       console.error(error);
       await Swal.fire({
         icon: "error",
         title: "Gagal",
         text: "Tidak bisa menyimpan pembayaran.",
-        timer: 5000,
-        timerProgressBar: true,
       });
     } finally {
       setSubmitting(false);
@@ -393,15 +453,18 @@ const Payments = () => {
                 <th>Jenis</th>
                 <th>Periode</th>
                 <th>Jumlah</th>
+                <th style={{ width: "80px" }}>Aksi</th>
               </tr>
             </thead>
             <tbody>
               {loading ? (
-                <tr>
-                  <td colSpan={6} style={{ color: "var(--text-secondary)" }}>
-                    Loading...
-                  </td>
-                </tr>
+                [...Array(5)].map((_, i) => (
+                  <tr key={i}>
+                    <td colSpan={8} style={{ padding: "1rem" }}>
+                      <div className="skeleton" style={{ height: "30px", width: "100%", borderRadius: "0.5rem" }}></div>
+                    </td>
+                  </tr>
+                ))
               ) : (
                 payments.map((p) => (
                   <tr key={p.id}>
@@ -423,7 +486,17 @@ const Payments = () => {
                     <td>
                       {p.payment_period_start} s/d {p.payment_period_end}
                     </td>
-                    <td>Rp {formatCurrency(p.amount)}</td>
+                    <td style={{ fontWeight: "700", color: "var(--primary)" }}>Rp {formatCurrency(p.amount)}</td>
+                    <td>
+                      <button 
+                        className="btn btn-outline" 
+                        style={{ padding: "0.4rem", borderRadius: "0.5rem" }}
+                        onClick={() => handleShowDetail(p)}
+                        title="Lihat Detail"
+                      >
+                        <Eye size={16} />
+                      </button>
+                    </td>
                   </tr>
                 ))
               )}
@@ -530,38 +603,105 @@ const Payments = () => {
                 </select>
               </div>
               <div>
-                <label>Jenis Iuran</label>
-                <select
-                  value={formData.payment_type}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    setFormData({
-                      ...formData,
-                      payment_type: val,
-                      amount: val === "lainnya" ? 0 : formData.amount,
-                    });
-                  }}
-                >
-                  <option value="satpam">Satpam (Rp 100.000)</option>
-                  <option value="kebersihan">Kebersihan (Rp 15.000)</option>
-                  <option value="lainnya">Lainnya (Manual)</option>
-                </select>
+                <label style={{ marginBottom: "0.5rem", display: "block" }}>Jenis Iuran</label>
+                <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+                  <label className="glass-card" style={{ 
+                    display: "flex", 
+                    alignItems: "center", 
+                    gap: "0.75rem", 
+                    padding: "0.75rem 1rem", 
+                    cursor: "pointer",
+                    background: paymentOptions.satpam ? "var(--primary-soft)" : "transparent",
+                    borderColor: paymentOptions.satpam ? "var(--primary)" : "var(--glass-border)"
+                  }}>
+                    <input 
+                      type="checkbox" 
+                      style={{ width: "auto", marginTop: 0 }}
+                      checked={paymentOptions.satpam}
+                      onChange={(e) => setPaymentOptions({ ...paymentOptions, satpam: e.target.checked })}
+                    />
+                    <div style={{ flex: 1 }}>
+                      <span style={{ fontWeight: "600", display: "block" }}>Satpam</span>
+                      <span style={{ fontSize: "0.8rem", color: "var(--text-secondary)" }}>Rp 100.000 / bulan</span>
+                    </div>
+                  </label>
+
+                  <label className="glass-card" style={{ 
+                    display: "flex", 
+                    alignItems: "center", 
+                    gap: "0.75rem", 
+                    padding: "0.75rem 1rem", 
+                    cursor: "pointer",
+                    background: paymentOptions.kebersihan ? "var(--primary-soft)" : "transparent",
+                    borderColor: paymentOptions.kebersihan ? "var(--primary)" : "var(--glass-border)"
+                  }}>
+                    <input 
+                      type="checkbox" 
+                      style={{ width: "auto", marginTop: 0 }}
+                      checked={paymentOptions.kebersihan}
+                      onChange={(e) => setPaymentOptions({ ...paymentOptions, kebersihan: e.target.checked })}
+                    />
+                    <div style={{ flex: 1 }}>
+                      <span style={{ fontWeight: "600", display: "block" }}>Kebersihan</span>
+                      <span style={{ fontSize: "0.8rem", color: "var(--text-secondary)" }}>Rp 15.000 / bulan</span>
+                    </div>
+                  </label>
+
+                  <label className="glass-card" style={{ 
+                    display: "flex", 
+                    alignItems: "center", 
+                    gap: "0.75rem", 
+                    padding: "0.75rem 1rem", 
+                    cursor: "pointer",
+                    background: paymentOptions.lainnya ? "var(--primary-soft)" : "transparent",
+                    borderColor: paymentOptions.lainnya ? "var(--primary)" : "var(--glass-border)"
+                  }}>
+                    <input 
+                      type="checkbox" 
+                      style={{ width: "auto", marginTop: 0 }}
+                      checked={paymentOptions.lainnya}
+                      onChange={(e) => setPaymentOptions({ ...paymentOptions, lainnya: e.target.checked })}
+                    />
+                    <div style={{ flex: 1 }}>
+                      <span style={{ fontWeight: "600", display: "block" }}>Lainnya (Manual)</span>
+                      <span style={{ fontSize: "0.8rem", color: "var(--text-secondary)" }}>Input jumlah bebas</span>
+                    </div>
+                  </label>
+                </div>
               </div>
 
-              {formData.payment_type === "lainnya" && (
-                <div>
-                  <label>Masukkan Jumlah (Rp)</label>
-                  <input
-                    type="number"
-                    required
-                    placeholder="Contoh: 50000"
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        amount: Number(e.target.value),
-                      })
-                    }
-                  />
+              {paymentOptions.lainnya && (
+                <div style={{ display: "flex", flexDirection: "column", gap: "1rem", padding: "1rem", background: "var(--surface-muted)", borderRadius: "1rem" }}>
+                  <div>
+                    <label>Masukkan Jumlah (Rp)</label>
+                    <input
+                      type="number"
+                      required
+                      placeholder="Contoh: 50000"
+                      value={formData.amount}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          amount: e.target.value === "" ? "" : Number(e.target.value),
+                        })
+                      }
+                    />
+                  </div>
+                  <div>
+                    <label>Keterangan</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="Contoh: Iuran THR, Dana Sosial, dll"
+                      value={formData.description}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          description: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
                 </div>
               )}
 
@@ -603,25 +743,18 @@ const Payments = () => {
               </div>
               <div>
                 <label>Total Bayar (Otomatis)</label>
-                <input
-                  type="number"
-                  readOnly={formData.payment_type !== "lainnya"}
-                  value={formData.amount}
-                  style={{
-                    background:
-                      formData.payment_type === "lainnya"
-                        ? "#fff"
-                        : "var(--surface-muted)",
-                  }}
-                  onChange={(e) => {
-                    if (formData.payment_type === "lainnya") {
-                      setFormData({
-                        ...formData,
-                        amount: Number(e.target.value),
-                      });
-                    }
-                  }}
-                />
+                <div style={{ 
+                  padding: "1rem", 
+                  background: "var(--primary-soft)", 
+                  color: "var(--primary)", 
+                  fontSize: "1.5rem", 
+                  fontWeight: "800", 
+                  borderRadius: "0.75rem",
+                  textAlign: "center",
+                  border: "1px dashed var(--primary)"
+                }}>
+                  Rp {formatCurrency(calculateTotalAmount())}
+                </div>
               </div>
               <div style={{ display: "flex", gap: "1rem", marginTop: "1rem" }}>
                 <button

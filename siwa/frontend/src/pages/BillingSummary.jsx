@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { billingService } from "../services/api";
-import { ClipboardList, Calendar, CheckCircle, XCircle, AlertCircle, FileDown, Search } from "lucide-react";
+import { ClipboardList, Calendar, CheckCircle, XCircle, AlertCircle, FileDown, Search, ChevronDown } from "lucide-react";
 import * as XLSX from 'xlsx';
 
 const BillingSummary = () => {
@@ -49,10 +49,31 @@ const BillingSummary = () => {
     }
   };
 
-  const filteredSummary = summary.filter(item => 
-    item.house_number.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    item.resident_name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredSummary = summary.filter(item => {
+    const s = searchTerm.toLowerCase();
+    
+    // Status Hunian
+    const residentStatus = item.resident_status ? (item.resident_status === 'tetap' ? 'tetap' : 'kontrak') : 'kosong';
+    
+    // Status Akhir
+    let finalStatus = "";
+    if (!item.must_pay) {
+      finalStatus = "tidak ada tagihan";
+    } else if (item.satpam === 'lunas' && item.kebersihan === 'lunas') {
+      finalStatus = "lunas";
+    } else {
+      finalStatus = "tunggakan";
+    }
+
+    return (
+      item.house_number.toLowerCase().includes(s) ||
+      item.resident_name.toLowerCase().includes(s) ||
+      residentStatus.includes(s) ||
+      item.satpam.toLowerCase().includes(s) ||
+      item.kebersihan.toLowerCase().includes(s) ||
+      finalStatus.includes(s)
+    );
+  });
 
   const handleDownloadExcel = () => {
     const monthName = new Date(0, month - 1).toLocaleString('id-ID', { month: 'long' });
@@ -81,81 +102,132 @@ const BillingSummary = () => {
           <p style={{ color: "var(--text-secondary)" }}>Pantau status pembayaran warga per periode.</p>
         </div>
 
-        <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
-          <div className="glass-card" style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.5rem 1rem" }}>
+        <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap", alignItems: "center" }}>
+          <div className="glass-card" style={{ 
+            display: "flex", 
+            alignItems: "center", 
+            gap: "0.75rem", 
+            padding: "0.6rem 1.25rem",
+            boxShadow: "0 4px 20px rgba(0,0,0,0.04)",
+            border: "1px solid var(--glass-border)",
+            transition: "all 0.2s"
+          }}>
             <Search size={18} style={{ color: "var(--text-secondary)" }} />
             <input 
               type="text" 
-              placeholder="Cari rumah / penghuni..."
+              placeholder="Cari data laporan..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              style={{ border: "none", background: "transparent", outline: "none", width: "180px" }}
+              style={{ border: "none", background: "transparent", outline: "none", width: "180px", fontSize: "0.95rem", color: "var(--text-primary)" }}
             />
           </div>
 
-          <div className="glass-card" style={{ display: "flex", gap: "1rem", padding: "0.75rem 1.5rem" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+          <div className="glass-card" style={{ 
+            display: "flex", 
+            gap: "0.5rem", 
+            padding: "0.4rem 1.25rem", 
+            alignItems: "center",
+            boxShadow: "0 4px 20px rgba(0,0,0,0.04)",
+            border: "1px solid var(--glass-border)"
+          }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", paddingRight: "0.75rem", borderRight: "1px solid var(--glass-border)" }}>
               <Calendar size={18} style={{ color: "var(--primary)" }} />
+              <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
+                <select 
+                  value={month} 
+                  onChange={(e) => setMonth(Number(e.target.value))}
+                  style={{ 
+                    padding: "0.4rem 1.5rem 0.4rem 0.5rem", 
+                    border: "none", 
+                    background: "transparent", 
+                    fontWeight: "700",
+                    appearance: "none",
+                    cursor: "pointer",
+                    fontSize: "0.95rem",
+                    color: "var(--text-primary)",
+                    outline: "none"
+                  }}
+                >
+                  {Array.from({ length: 12 }, (_, i) => (
+                    <option key={i + 1} value={i + 1}>
+                      {new Date(0, i).toLocaleString('id-ID', { month: 'long' })}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown size={14} style={{ position: "absolute", right: 0, pointerEvents: "none", color: "var(--text-secondary)" }} />
+              </div>
+            </div>
+
+            <div style={{ position: "relative", display: "flex", alignItems: "center", paddingLeft: "0.25rem" }}>
               <select 
-                value={month} 
-                onChange={(e) => setMonth(Number(e.target.value))}
-                style={{ padding: "0.25rem", border: "none", background: "transparent", fontWeight: "600" }}
+                value={year} 
+                onChange={(e) => setYear(Number(e.target.value))}
+                style={{ 
+                  padding: "0.4rem 1.5rem 0.4rem 0.5rem", 
+                  border: "none", 
+                  background: "transparent", 
+                  fontWeight: "700",
+                  appearance: "none",
+                  cursor: "pointer",
+                  fontSize: "0.95rem",
+                  color: "var(--text-primary)",
+                  outline: "none"
+                }}
               >
-                {Array.from({ length: 12 }, (_, i) => (
-                  <option key={i + 1} value={i + 1}>
-                    {new Date(0, i).toLocaleString('id-ID', { month: 'long' })}
-                  </option>
+                {[2024, 2025, 2026].map(y => (
+                  <option key={y} value={y}>{y}</option>
                 ))}
               </select>
+              <ChevronDown size={14} style={{ position: "absolute", right: 0, pointerEvents: "none", color: "var(--text-secondary)" }} />
             </div>
-            <select 
-              value={year} 
-              onChange={(e) => setYear(Number(e.target.value))}
-              style={{ padding: "0.25rem", border: "none", background: "transparent", fontWeight: "600" }}
-            >
-              {[2024, 2025, 2026].map(y => (
-                <option key={y} value={y}>{y}</option>
-              ))}
-            </select>
           </div>
 
-          <button className="btn btn-primary" onClick={handleDownloadExcel} disabled={filteredSummary.length === 0}>
+          <button className="btn btn-primary" onClick={handleDownloadExcel} disabled={filteredSummary.length === 0} style={{ padding: "0.75rem 1.5rem", borderRadius: "1rem" }}>
             <FileDown size={18} />
-            Download Excel
+            <span>Download Excel</span>
           </button>
         </div>
       </header>
 
       <div className="glass-card" style={{ padding: 0, overflow: "hidden" }}>
-        <div className="table-responsive">
-          <table>
+        <div className="table-responsive" style={{ borderRadius: "1rem" }}>
+          <table className="summary-table">
             <thead>
               <tr>
-                <th>Rumah</th>
+                <th style={{ paddingLeft: "1.5rem" }}>Rumah</th>
                 <th>Penghuni</th>
                 <th>Status Hunian</th>
                 <th style={{ textAlign: "center" }}>Iuran Satpam</th>
                 <th style={{ textAlign: "center" }}>Iuran Kebersihan</th>
-                <th>Status Akhir</th>
+                <th style={{ paddingRight: "1.5rem" }}>Status Akhir</th>
               </tr>
             </thead>
             <tbody>
               {loading ? (
-                <tr>
-                  <td colSpan={6} style={{ textAlign: "center", padding: "2rem", color: "var(--text-secondary)" }}>Loading summary...</td>
-                </tr>
+                [...Array(6)].map((_, i) => (
+                  <tr key={i}>
+                    <td colSpan={6} style={{ padding: "1.25rem" }}>
+                      <div className="skeleton" style={{ height: "30px", width: "100%", borderRadius: "0.5rem" }}></div>
+                    </td>
+                  </tr>
+                ))
               ) : filteredSummary.length === 0 ? (
                 <tr>
-                  <td colSpan={6} style={{ textAlign: "center", padding: "2rem", color: "var(--text-secondary)" }}>Data tidak ditemukan.</td>
+                  <td colSpan={6} style={{ textAlign: "center", padding: "4rem", color: "var(--text-secondary)" }}>
+                    <div style={{ opacity: 0.5, marginBottom: "1rem" }}>
+                      <Search size={48} strokeWidth={1} />
+                    </div>
+                    Data tidak ditemukan.
+                  </td>
                 </tr>
               ) : (
                 filteredSummary.map((item) => (
-                  <tr key={item.house_id}>
-                    <td style={{ fontWeight: "700" }}>{item.house_number}</td>
+                  <tr key={item.house_id} style={{ cursor: "default" }}>
+                    <td style={{ fontWeight: "700", paddingLeft: "1.5rem", color: "var(--text-strong)" }}>{item.house_number}</td>
                     <td>{item.resident_name}</td>
                     <td>
                       {item.resident_status ? (
-                        <span className={`badge ${item.resident_status === 'tetap' ? 'badge-success' : 'badge-warning'}`}>
+                        <span className={`badge ${item.resident_status === 'tetap' ? 'badge-success' : 'badge-warning'}`} style={{ fontSize: "0.7rem", textTransform: "uppercase", letterSpacing: "0.025em" }}>
                           {item.resident_status === 'tetap' ? 'Tetap' : 'Kontrak'}
                         </span>
                       ) : '-'}
@@ -172,13 +244,13 @@ const BillingSummary = () => {
                         {getStatusBadge(item.kebersihan)}
                       </div>
                     </td>
-                    <td>
+                    <td style={{ paddingRight: "1.5rem" }}>
                       {item.must_pay ? (
                         (item.satpam === 'lunas' && item.kebersihan === 'lunas') ? 
-                        <span style={{ color: "var(--success)", fontWeight: "600" }}>LUNAS</span> : 
-                        <span style={{ color: "var(--danger)", fontWeight: "600" }}>TUNGGAKAN</span>
+                        <span className="badge badge-success" style={{ fontWeight: "800", padding: "0.4rem 1rem" }}>LUNAS</span> : 
+                        <span className="badge badge-danger" style={{ fontWeight: "800", padding: "0.4rem 1rem" }}>TUNGGAKAN</span>
                       ) : (
-                        <span style={{ color: "var(--text-secondary)" }}>Tidak Ada Tagihan</span>
+                        <span style={{ color: "var(--text-secondary)", fontSize: "0.85rem", fontStyle: "italic" }}>Tidak Ada Tagihan</span>
                       )}
                     </td>
                   </tr>
@@ -189,38 +261,52 @@ const BillingSummary = () => {
         </div>
       </div>
 
-      <div style={{ display: "flex", gap: "1.5rem", flexWrap: "wrap" }}>
-        <div className="glass-card" style={{ flex: 1, display: "flex", alignItems: "center", gap: "1rem" }}>
-          <div style={{ padding: "0.75rem", background: "var(--primary-soft)", borderRadius: "0.5rem", color: "var(--primary)" }}>
-            <ClipboardList size={24} />
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "1.5rem" }}>
+        <div className="glass-card" style={{ display: "flex", alignItems: "center", gap: "1.25rem", padding: "1.5rem", borderLeft: "4px solid var(--primary)" }}>
+          <div style={{ padding: "1rem", background: "var(--primary-soft)", borderRadius: "1rem", color: "var(--primary)" }}>
+            <ClipboardList size={28} />
           </div>
           <div>
-            <p style={{ color: "var(--text-secondary)", fontSize: "0.875rem" }}>Total Rumah Wajib Iuran</p>
-            <h3 style={{ fontSize: "1.5rem", fontWeight: "700" }}>
-              {summary.filter(s => s.must_pay).length} Rumah
-            </h3>
+            <p style={{ color: "var(--text-secondary)", fontSize: "0.875rem", fontWeight: "500", marginBottom: "0.25rem" }}>Total Rumah Wajib Iuran</p>
+            {loading ? (
+              <div className="skeleton" style={{ height: "2.5rem", width: "100px", borderRadius: "0.5rem" }}></div>
+            ) : (
+              <h3 style={{ fontSize: "1.75rem", fontWeight: "800", color: "var(--text-strong)" }}>
+                {summary.filter(s => s.must_pay).length} <span style={{ fontSize: "1rem", fontWeight: "500", color: "var(--text-secondary)" }}>Unit</span>
+              </h3>
+            )}
           </div>
         </div>
-        <div className="glass-card" style={{ flex: 1, display: "flex", alignItems: "center", gap: "1rem" }}>
-          <div style={{ padding: "0.75rem", background: "rgba(16, 185, 129, 0.1)", borderRadius: "0.5rem", color: "var(--success)" }}>
-            <CheckCircle size={24} />
+
+        <div className="glass-card" style={{ display: "flex", alignItems: "center", gap: "1.25rem", padding: "1.5rem", borderLeft: "4px solid var(--success)" }}>
+          <div style={{ padding: "1rem", background: "rgba(16, 185, 129, 0.1)", borderRadius: "1rem", color: "var(--success)" }}>
+            <CheckCircle size={28} />
           </div>
           <div>
-            <p style={{ color: "var(--text-secondary)", fontSize: "0.875rem" }}>Sudah Lunas Semua</p>
-            <h3 style={{ fontSize: "1.5rem", fontWeight: "700" }}>
-              {summary.filter(s => s.must_pay && s.satpam === 'lunas' && s.kebersihan === 'lunas').length} Rumah
-            </h3>
+            <p style={{ color: "var(--text-secondary)", fontSize: "0.875rem", fontWeight: "500", marginBottom: "0.25rem" }}>Sudah Lunas Semua</p>
+            {loading ? (
+              <div className="skeleton" style={{ height: "2.5rem", width: "100px", borderRadius: "0.5rem" }}></div>
+            ) : (
+              <h3 style={{ fontSize: "1.75rem", fontWeight: "800", color: "var(--text-strong)" }}>
+                {summary.filter(s => s.must_pay && s.satpam === 'lunas' && s.kebersihan === 'lunas').length} <span style={{ fontSize: "1rem", fontWeight: "500", color: "var(--text-secondary)" }}>Unit</span>
+              </h3>
+            )}
           </div>
         </div>
-        <div className="glass-card" style={{ flex: 1, display: "flex", alignItems: "center", gap: "1rem" }}>
-          <div style={{ padding: "0.75rem", background: "rgba(239, 68, 68, 0.1)", borderRadius: "0.5rem", color: "var(--danger)" }}>
-            <XCircle size={24} />
+
+        <div className="glass-card" style={{ display: "flex", alignItems: "center", gap: "1.25rem", padding: "1.5rem", borderLeft: "4px solid var(--danger)" }}>
+          <div style={{ padding: "1rem", background: "rgba(239, 68, 68, 0.1)", borderRadius: "1rem", color: "var(--danger)" }}>
+            <XCircle size={28} />
           </div>
           <div>
-            <p style={{ color: "var(--text-secondary)", fontSize: "0.875rem" }}>Belum Bayar</p>
-            <h3 style={{ fontSize: "1.5rem", fontWeight: "700" }}>
-              {summary.filter(s => s.must_pay && (s.satpam === 'belum' || s.kebersihan === 'belum')).length} Rumah
-            </h3>
+            <p style={{ color: "var(--text-secondary)", fontSize: "0.875rem", fontWeight: "500", marginBottom: "0.25rem" }}>Belum Bayar (Tunggakan)</p>
+            {loading ? (
+              <div className="skeleton" style={{ height: "2.5rem", width: "100px", borderRadius: "0.5rem" }}></div>
+            ) : (
+              <h3 style={{ fontSize: "1.75rem", fontWeight: "800", color: "var(--text-strong)" }}>
+                {summary.filter(s => s.must_pay && (s.satpam === 'belum' || s.kebersihan === 'belum')).length} <span style={{ fontSize: "1rem", fontWeight: "500", color: "var(--text-secondary)" }}>Unit</span>
+              </h3>
+            )}
           </div>
         </div>
       </div>

@@ -36,6 +36,7 @@ class BillingService
             'house_id' => $data['house_id'],
             'resident_id' => $data['resident_id'],
             'payment_type' => $data['payment_type'],
+            'description' => $data['description'] ?? null,
             'amount' => $data['amount'],
             'payment_period_start' => $data['payment_period_start'],
             'payment_period_end' => $data['payment_period_end'],

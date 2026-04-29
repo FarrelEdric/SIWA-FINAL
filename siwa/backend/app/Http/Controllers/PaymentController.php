@@ -25,6 +25,7 @@ class PaymentController extends Controller
             $query->where(function ($sub) use ($q) {
                 $like = '%' . $q . '%';
                 $sub->where('payment_type', 'like', $like)
+                    ->orWhere('description', 'like', $like)
                     ->orWhere('status', 'like', $like)
                     ->orWhereHas('house', function ($h) use ($like) {
                         $h->where('house_number', 'like', $like);
@@ -55,6 +56,7 @@ class PaymentController extends Controller
             'house_id' => 'required|exists:houses,id',
             'resident_id' => 'required|exists:residents,id',
             'payment_type' => 'required|in:satpam,kebersihan,lainnya',
+            'description' => 'nullable|string',
             'amount' => 'required|numeric', 
             'payment_period_start' => 'required|date',
             'payment_period_end' => 'required|date',

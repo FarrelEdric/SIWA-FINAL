@@ -67,7 +67,26 @@ const Dashboard = () => {
     }
   };
 
-  if (loading) return <div>Loading dashboard...</div>;
+  // Loading Skeleton Components
+  const StatSkeleton = () => (
+    <div className="glass-card" style={{ flex: 1, height: "100px" }}>
+      <div className="skeleton" style={{ height: "100%", width: "100%", borderRadius: "0.75rem" }}></div>
+    </div>
+  );
+
+  const TableSkeleton = () => (
+    <div className="glass-card">
+      <div className="skeleton" style={{ height: "30px", width: "60%", marginBottom: "1rem", borderRadius: "0.4rem" }}></div>
+      <div className="skeleton" style={{ height: "200px", width: "100%", borderRadius: "0.75rem" }}></div>
+    </div>
+  );
+
+  const ChartSkeleton = () => (
+    <div className="glass-card" style={{ height: "400px" }}>
+      <div className="skeleton" style={{ height: "30px", width: "40%", marginBottom: "1.5rem", borderRadius: "0.4rem" }}></div>
+      <div className="skeleton" style={{ height: "80%", width: "100%", borderRadius: "1rem" }}></div>
+    </div>
+  );
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "2rem" }}>
@@ -82,63 +101,77 @@ const Dashboard = () => {
       </header>
 
       <div style={{ display: "flex", gap: "1.5rem", flexWrap: "wrap" }}>
-        <StatCard
-          title="Pemasukan Bulan Ini"
-          value={data.summary.total_income}
-          icon={TrendingUp}
-          color="#3f8a62"
-        />
-        <StatCard
-          title="Pengeluaran Bulan Ini"
-          value={data.summary.total_expense}
-          icon={TrendingDown}
-          color="#b74a4a"
-        />
-        <StatCard
-          title="Saldo Akhir"
-          value={data.summary.balance}
-          icon={Wallet}
-          color="#4f8b65"
-        />
+        {loading ? (
+          <>
+            <StatSkeleton />
+            <StatSkeleton />
+            <StatSkeleton />
+          </>
+        ) : (
+          <>
+            <StatCard
+              title="Pemasukan Bulan Ini"
+              value={data.summary.total_income}
+              icon={TrendingUp}
+              color="#3f8a62"
+            />
+            <StatCard
+              title="Pengeluaran Bulan Ini"
+              value={data.summary.total_expense}
+              icon={TrendingDown}
+              color="#b74a4a"
+            />
+            <StatCard
+              title="Saldo Akhir"
+              value={data.summary.balance}
+              icon={Wallet}
+              color="#4f8b65"
+            />
+          </>
+        )}
       </div>
 
-      <div className="glass-card" style={{ height: "400px" }}>
-        <h3 style={{ marginBottom: "1.5rem" }}>Cashflow (12 Bulan Terakhir)</h3>
-        <ResponsiveContainer width="100%" height="90%">
-          <AreaChart data={data.chart}>
-            <defs>
-              <linearGradient id="colorIncome" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#4f8b65" stopOpacity={0.28} />
-                <stop offset="95%" stopColor="#4f8b65" stopOpacity={0} />
-              </linearGradient>
-            </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(48,54,48,0.14)" />
-            <XAxis dataKey="month" stroke="var(--text-secondary)" />
-            <YAxis stroke="var(--text-secondary)" />
-            <Tooltip
-              contentStyle={{
-                background: "#ffffff",
-                border: "1px solid var(--glass-border)",
-                borderRadius: "0.5rem",
-              }}
-              itemStyle={{ color: "var(--text-primary)" }}
-            />
-            <Area
-              type="monotone"
-              dataKey="income"
-              stroke="#4f8b65"
-              fillOpacity={1}
-              fill="url(#colorIncome)"
-            />
-            <Area
-              type="monotone"
-              dataKey="expense"
-              stroke="#b74a4a"
-              fill="transparent"
-            />
-          </AreaChart>
-        </ResponsiveContainer>
-      </div>
+      {loading ? (
+        <ChartSkeleton />
+      ) : (
+        <div className="glass-card" style={{ height: "400px" }}>
+          <h3 style={{ marginBottom: "1.5rem" }}>Cashflow (12 Bulan Terakhir)</h3>
+          <ResponsiveContainer width="100%" height="90%">
+            <AreaChart data={data.chart}>
+              <defs>
+                <linearGradient id="colorIncome" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#4f8b65" stopOpacity={0.28} />
+                  <stop offset="95%" stopColor="#4f8b65" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(48,54,48,0.14)" />
+              <XAxis dataKey="month" stroke="var(--text-secondary)" />
+              <YAxis stroke="var(--text-secondary)" />
+              <Tooltip
+                contentStyle={{
+                  background: "#ffffff",
+                  border: "1px solid var(--glass-border)",
+                  borderRadius: "0.5rem",
+                }}
+                itemStyle={{ color: "var(--text-primary)" }}
+              />
+              <Area
+                type="monotone"
+                dataKey="income"
+                stroke="#4f8b65"
+                fillOpacity={1}
+                fill="url(#colorIncome)"
+              />
+              <Area
+                type="monotone"
+                dataKey="expense"
+                stroke="#b74a4a"
+                fill="transparent"
+              />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
+      )}
 
       <div
         style={{
@@ -147,66 +180,75 @@ const Dashboard = () => {
           gap: "1.5rem",
         }}
       >
-        <div className="glass-card">
-          <h3 style={{ marginBottom: "1rem" }}>Transaksi Pemasukan Terbaru</h3>
-          <div className="table-responsive">
-            <table>
-              <thead>
-                <tr>
-                  <th>Tanggal</th>
-                  <th>Rumah</th>
-                  <th>Tipe</th>
-                  <th>Jumlah</th>
-                </tr>
-              </thead>
-              <tbody>
-                {data.details.income.slice(0, 5).map((item) => (
-                  <tr key={item.id}>
-                    <td>{new Date(item.payment_date).toLocaleDateString()}</td>
-                    <td>{item.house.house_number}</td>
-                    <td>
-                      <span className="badge badge-success">
-                        {item.payment_type}
-                      </span>
-                    </td>
-                    <td>Rp {formatCurrency(item.amount)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-        <div className="glass-card">
-          <h3 style={{ marginBottom: "1rem" }}>
-            Transaksi Pengeluaran Terbaru
-          </h3>
-          <div className="table-responsive">
-            <table>
-              <thead>
-                <tr>
-                  <th>Tanggal</th>
-                  <th>Judul</th>
-                  <th>Kategori</th>
-                  <th>Jumlah</th>
-                </tr>
-              </thead>
-              <tbody>
-                {data.details.expense.slice(0, 5).map((item) => (
-                  <tr key={item.id}>
-                    <td>{new Date(item.expense_date).toLocaleDateString()}</td>
-                    <td>{item.title}</td>
-                    <td>
-                      <span className="badge badge-warning">
-                        {item.category}
-                      </span>
-                    </td>
-                    <td>Rp {formatCurrency(item.amount)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
+        {loading ? (
+          <>
+            <TableSkeleton />
+            <TableSkeleton />
+          </>
+        ) : (
+          <>
+            <div className="glass-card">
+              <h3 style={{ marginBottom: "1rem" }}>Transaksi Pemasukan Terbaru</h3>
+              <div className="table-responsive">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Tanggal</th>
+                      <th>Rumah</th>
+                      <th>Tipe</th>
+                      <th>Jumlah</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {data.details.income.slice(0, 5).map((item) => (
+                      <tr key={item.id}>
+                        <td>{new Date(item.payment_date).toLocaleDateString()}</td>
+                        <td>{item.house.house_number}</td>
+                        <td>
+                          <span className="badge badge-success">
+                            {item.payment_type}
+                          </span>
+                        </td>
+                        <td>Rp {formatCurrency(item.amount)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <div className="glass-card">
+              <h3 style={{ marginBottom: "1rem" }}>
+                Transaksi Pengeluaran Terbaru
+              </h3>
+              <div className="table-responsive">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Tanggal</th>
+                      <th>Judul</th>
+                      <th>Kategori</th>
+                      <th>Jumlah</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {data.details.expense.slice(0, 5).map((item) => (
+                      <tr key={item.id}>
+                        <td>{new Date(item.expense_date).toLocaleDateString()}</td>
+                        <td>{item.title}</td>
+                        <td>
+                          <span className="badge badge-warning">
+                            {item.category}
+                          </span>
+                        </td>
+                        <td>Rp {formatCurrency(item.amount)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

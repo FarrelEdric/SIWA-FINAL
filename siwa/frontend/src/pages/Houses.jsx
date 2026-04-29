@@ -262,7 +262,11 @@ const Houses = () => {
         }}
       >
         {loading ? (
-          <div style={{ color: "var(--text-secondary)" }}>Loading...</div>
+          [...Array(6)].map((_, i) => (
+            <div key={i} className="glass-card" style={{ height: "200px" }}>
+              <div className="skeleton" style={{ height: "100%", width: "100%", borderRadius: "1rem" }}></div>
+            </div>
+          ))
         ) : (
           houses.map((h) => (
             <div

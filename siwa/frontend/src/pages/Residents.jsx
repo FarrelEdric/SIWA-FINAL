@@ -349,11 +349,13 @@ const Residents = () => {
             </thead>
             <tbody>
               {loading ? (
-                <tr>
-                  <td colSpan={5} style={{ color: "var(--text-secondary)" }}>
-                    Loading...
-                  </td>
-                </tr>
+                [...Array(5)].map((_, i) => (
+                  <tr key={i}>
+                    <td colSpan={5} style={{ padding: "1rem" }}>
+                      <div className="skeleton" style={{ height: "30px", width: "100%", borderRadius: "0.5rem" }}></div>
+                    </td>
+                  </tr>
+                ))
               ) : (
                 residents.map((r) => (
                   <tr key={r.id}>

@@ -13,6 +13,7 @@ class Payment extends Model
         'house_id',
         'resident_id',
         'payment_type',
+        'description',
         'amount',
         'payment_period_start',
         'payment_period_end',
