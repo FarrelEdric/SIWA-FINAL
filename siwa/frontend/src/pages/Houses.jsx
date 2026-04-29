@@ -96,6 +96,8 @@ const Houses = () => {
         icon: "error",
         title: "Gagal",
         text: "Tidak bisa mengambil data rumah.",
+        timer: 5000,
+        timerProgressBar: true,
       });
     } finally {
       setLoading(false);
@@ -115,6 +117,8 @@ const Houses = () => {
         icon: "success",
         title: "Berhasil",
         text: "Penghuni berhasil di-assign.",
+        timer: 5000,
+        timerProgressBar: true,
       });
       fetchHouses();
       setShowAssignModal(false);
@@ -124,6 +128,8 @@ const Houses = () => {
         icon: "error",
         title: "Gagal",
         text: "Tidak bisa assign penghuni.",
+        timer: 5000,
+        timerProgressBar: true,
       });
     }
   };
@@ -140,6 +146,8 @@ const Houses = () => {
         icon: "success",
         title: "Berhasil",
         text: "Rumah berhasil ditambahkan.",
+        timer: 5000,
+        timerProgressBar: true,
       });
       setShowCreateModal(false);
       setCreateData({ house_number: "", status: "tidak_dihuni" });
@@ -150,6 +158,8 @@ const Houses = () => {
         icon: "error",
         title: "Gagal",
         text: error.response?.data?.message || "Tidak bisa menambahkan rumah.",
+        timer: 5000,
+        timerProgressBar: true,
       });
     } finally {
       setSubmitting(false);
@@ -158,12 +168,12 @@ const Houses = () => {
 
   const handleVacate = async (house) => {
     const result = await Swal.fire({
-      title: `Vacate Rumah ${house.house_number}`,
+      title: `Empty Rumah ${house.house_number}`,
       text: "Masukkan tanggal keluar.",
       input: "date",
       inputValue: new Date().toISOString().split("T")[0],
       showCancelButton: true,
-      confirmButtonText: "Vacate",
+      confirmButtonText: "Empty",
       cancelButtonText: "Batal",
     });
 
@@ -174,7 +184,9 @@ const Houses = () => {
       await Swal.fire({
         icon: "success",
         title: "Berhasil",
-        text: "Rumah berhasil di-vacate.",
+        text: "Rumah berhasil di-empty.",
+        timer: 5000,
+        timerProgressBar: true,
       });
       fetchHouses();
     } catch (error) {
@@ -182,13 +194,15 @@ const Houses = () => {
       await Swal.fire({
         icon: "error",
         title: "Gagal",
-        text: "Tidak bisa vacate rumah.",
+        text: "Tidak bisa empty rumah.",
+        timer: 5000,
+        timerProgressBar: true,
       });
     }
   };
 
-  const openDetailModal = (resident) => {
-    setSelectedResident(resident);
+  const openDetailModal = (house) => {
+    setSelectedHouse(house);
     setShowDetailModal(true);
   };
 
@@ -343,15 +357,14 @@ const Houses = () => {
                     style={{ flex: 1, color: "var(--danger)" }}
                     onClick={() => handleVacate(h)}
                   >
-                    <UserMinus size={16} /> Vacate
+                    <UserMinus size={16} /> Empty
                   </button>
                 )}
                 <button
                   className="btn btn-outline"
                   style={{ flex: 1, color: "var(--primary)" }}
                   title="Detail Penghuni"
-                  disabled={!h.current_resident}
-                  onClick={() => openDetailModal(h.current_resident)}
+                  onClick={() => openDetailModal(h)}
                 >
                   <Eye size={16} /> Detail
                 </button>
@@ -570,7 +583,7 @@ const Houses = () => {
           </div>
         </div>
       )}
-      {showDetailModal && selectedResident && (
+      {showDetailModal && selectedHouse && (
         <div
           style={{
             position: "fixed",
@@ -586,7 +599,7 @@ const Houses = () => {
             className="glass-card"
             style={{
               width: "100%",
-              maxWidth: "500px",
+              maxWidth: "600px",
               background: "var(--glass-bg)",
               margin: "1rem",
               maxHeight: "90vh",
@@ -601,7 +614,7 @@ const Houses = () => {
                 marginBottom: "1.5rem",
               }}
             >
-              <h2 style={{ margin: 0 }}>Detail Penghuni</h2>
+              <h2 style={{ margin: 0 }}>Detail Rumah {selectedHouse.house_number}</h2>
               <button
                 className="btn btn-outline"
                 style={{ padding: "0.25rem 0.5rem" }}
@@ -618,96 +631,108 @@ const Houses = () => {
                 gap: "1.5rem",
               }}
             >
-              {selectedResident.ktp_photo && (
-                <div style={{ textAlign: "center" }}>
-                  <p
+              <section>
+                <h3 style={{ fontSize: "1rem", marginBottom: "1rem", color: "var(--primary)" }}>
+                  Penghuni Saat Ini
+                </h3>
+                {selectedHouse.current_resident ? (
+                  <div
                     style={{
-                      fontWeight: "600",
-                      marginBottom: "0.5rem",
-                      color: "var(--text-secondary)",
+                      display: "grid",
+                      gridTemplateColumns: "1fr 1.5fr",
+                      gap: "1rem",
+                      background: "var(--surface-muted)",
+                      padding: "1rem",
+                      borderRadius: "0.5rem"
                     }}
                   >
-                    Foto KTP
-                  </p>
-                  <div
-                    onClick={() =>
-                      setZoomedPhoto(
-                        `${STORAGE_URL}/${selectedResident.ktp_photo}`,
-                      )
-                    }
-                    title="Klik untuk memperbesar"
-                    style={{ cursor: "zoom-in" }}
-                  >
-                    <img
-                      src={`${STORAGE_URL}/${selectedResident.ktp_photo}`}
-                      alt="KTP"
-                      style={{
-                        width: "100%",
-                        maxHeight: "250px",
-                        objectFit: "contain",
-                        borderRadius: "0.5rem",
-                        border: "1px solid var(--glass-border)",
-                      }}
-                    />
+                    <span style={{ fontWeight: "600", color: "var(--text-secondary)" }}>Nama:</span>
+                    <span>{selectedHouse.current_resident.full_name}</span>
+                    <span style={{ fontWeight: "600", color: "var(--text-secondary)" }}>Status:</span>
+                    <span className={`badge ${selectedHouse.current_resident.resident_status === "tetap" ? "badge-success" : "badge-warning"}`} style={{ alignSelf: 'start' }}>
+                      {selectedHouse.current_resident.resident_status === "tetap" ? "Tetap" : "Kontrak"}
+                    </span>
+                    <span style={{ fontWeight: "600", color: "var(--text-secondary)" }}>Telp:</span>
+                    <span>{selectedHouse.current_resident.phone_number}</span>
                   </div>
+                ) : (
+                  <p style={{ fontStyle: "italic", color: "var(--text-secondary)" }}>Kosong</p>
+                )}
+              </section>
+
+              <section>
+                <h3 style={{ fontSize: "1rem", marginBottom: "1rem", color: "var(--primary)" }}>
+                  History Penghuni
+                </h3>
+                <div className="table-responsive" style={{ maxHeight: "200px", overflowY: "auto" }}>
+                  <table style={{ fontSize: "0.875rem" }}>
+                    <thead>
+                      <tr>
+                        <th>Nama</th>
+                        <th>Masuk</th>
+                        <th>Keluar</th>
+                        <th>Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {selectedHouse.occupancy_histories?.map((history) => (
+                        <tr key={history.id}>
+                          <td>{history.resident?.full_name}</td>
+                          <td>{new Date(history.start_date).toLocaleDateString()}</td>
+                          <td>{history.end_date ? new Date(history.end_date).toLocaleDateString() : "-"}</td>
+                          <td>
+                            {history.is_current ? 
+                              <span className="badge badge-success">Aktif</span> : 
+                              <span className="badge badge-danger">Keluar</span>
+                            }
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
-              )}
+              </section>
 
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "1fr 1.5fr",
-                  gap: "1rem",
-                }}
-              >
-                <span
-                  style={{ fontWeight: "600", color: "var(--text-secondary)" }}
-                >
-                  Nama Lengkap:
-                </span>
-                <span>{selectedResident.full_name}</span>
-
-                <span
-                  style={{ fontWeight: "600", color: "var(--text-secondary)" }}
-                >
-                  Status Hunian:
-                </span>
-                <span
-                  className={`badge ${selectedResident.resident_status === "tetap" ? "badge-success" : "badge-warning"}`}
-                  style={{ alignSelf: "start" }}
-                >
-                  {selectedResident.resident_status === "tetap"
-                    ? "Tetap"
-                    : "Kontrak"}
-                </span>
-
-                <span
-                  style={{ fontWeight: "600", color: "var(--text-secondary)" }}
-                >
-                  No. Telepon:
-                </span>
-                <span
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "0.5rem",
-                  }}
-                >
-                  <Phone size={14} />
-                  {selectedResident.phone_number}
-                </span>
-
-                <span
-                  style={{ fontWeight: "600", color: "var(--text-secondary)" }}
-                >
-                  Status Pernikahan:
-                </span>
-                <span>
-                  {selectedResident.marital_status === "menikah"
-                    ? "Menikah"
-                    : "Belum Menikah"}
-                </span>
-              </div>
+              <section>
+                <h3 style={{ fontSize: "1rem", marginBottom: "1rem", color: "var(--primary)" }}>
+                  History Pembayaran
+                </h3>
+                <div className="table-responsive" style={{ maxHeight: "200px", overflowY: "auto" }}>
+                  <table style={{ fontSize: "0.875rem" }}>
+                    <thead>
+                      <tr>
+                        <th>Tanggal</th>
+                        <th>Penghuni</th>
+                        <th>Tipe</th>
+                        <th>Jumlah</th>
+                        <th>Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {selectedHouse.payments?.map((payment) => (
+                        <tr key={payment.id}>
+                          <td>{new Date(payment.payment_date).toLocaleDateString()}</td>
+                          <td>{payment.resident?.full_name}</td>
+                          <td>
+                            <span className="badge badge-success">{payment.payment_type}</span>
+                          </td>
+                          <td>Rp {payment.amount?.toLocaleString('id-ID')}</td>
+                          <td>
+                            <span className="badge badge-success">Lunas</span>
+                          </td>
+                        </tr>
+                      ))}
+                      {(!selectedHouse.payments || selectedHouse.payments.length === 0) && (
+                        <tr>
+                          <td colSpan={5} style={{ textAlign: "center", color: "var(--text-secondary)" }}>
+                            Belum ada riwayat pembayaran
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </section>
             </div>
           </div>
         </div>

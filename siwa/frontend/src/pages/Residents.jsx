@@ -137,6 +137,8 @@ const Residents = () => {
         icon: "error",
         title: "Gagal",
         text: "Tidak bisa mengambil data penghuni.",
+        timer: 5000,
+        timerProgressBar: true,
       });
     } finally {
       setLoading(false);
@@ -154,6 +156,8 @@ const Residents = () => {
           icon: "success",
           title: "Berhasil",
           text: "Data penghuni berhasil diperbarui.",
+          timer: 5000,
+          timerProgressBar: true,
         });
       } else {
         await residentService.create(formData);
@@ -161,6 +165,8 @@ const Residents = () => {
           icon: "success",
           title: "Berhasil",
           text: "Penghuni berhasil ditambahkan.",
+          timer: 5000,
+          timerProgressBar: true,
         });
       }
 
@@ -183,6 +189,8 @@ const Residents = () => {
         icon: "error",
         title: "Gagal",
         text: message,
+        timer: 5000,
+        timerProgressBar: true,
       });
     } finally {
       setSubmitting(false);
@@ -207,6 +215,8 @@ const Residents = () => {
         icon: "success",
         title: "Berhasil",
         text: "Penghuni berhasil dihapus.",
+        timer: 5000,
+        timerProgressBar: true,
       });
       fetchResidents();
     } catch (error) {
@@ -215,6 +225,8 @@ const Residents = () => {
         icon: "error",
         title: "Gagal",
         text: "Tidak bisa menghapus penghuni.",
+        timer: 5000,
+        timerProgressBar: true,
       });
     }
   };
@@ -237,6 +249,8 @@ const Residents = () => {
         icon: "success",
         title: "Berhasil",
         text: "Semua penghuni berhasil dihapus.",
+        timer: 5000,
+        timerProgressBar: true,
       });
       setPage(1);
       fetchResidents();
@@ -246,6 +260,8 @@ const Residents = () => {
         icon: "error",
         title: "Gagal",
         text: "Tidak bisa menghapus semua penghuni.",
+        timer: 5000,
+        timerProgressBar: true,
       });
     }
   };

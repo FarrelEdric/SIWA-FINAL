@@ -12,10 +12,11 @@ class HouseSeeder extends Seeder
      */
     public function run(): void
     {
-        for ($i = 1; $i <= 20; $i++) {
+        // Buat 15 rumah
+        for ($i = 1; $i <= 15; $i++) {
             \App\Models\House::create([
                 'house_number' => 'A' . str_pad($i, 2, '0', STR_PAD_LEFT),
-                'status' => 'tidak_dihuni',
+                'status' => 'dihuni',
             ]);
         }
     }

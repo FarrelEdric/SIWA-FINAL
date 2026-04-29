@@ -111,6 +111,8 @@ const Payments = () => {
         icon: "error",
         title: "Gagal",
         text: "Tidak bisa mengambil data pembayaran.",
+        timer: 5000,
+        timerProgressBar: true,
       });
     } finally {
       setLoading(false);
@@ -127,6 +129,8 @@ const Payments = () => {
         icon: "error",
         title: "Gagal",
         text: "Tidak bisa mengambil data rumah.",
+        timer: 5000,
+        timerProgressBar: true,
       });
     }
   };
@@ -166,12 +170,24 @@ const Payments = () => {
       try {
         setLoading(true);
         await paymentService.deleteBulk(selectedIds);
-        await Swal.fire("Berhasil", "Data telah dihapus.", "success");
+        await Swal.fire({
+          title: "Berhasil",
+          text: "Data telah dihapus.",
+          icon: "success",
+          timer: 5000,
+          timerProgressBar: true,
+        });
         setSelectedIds([]);
         fetchPayments();
       } catch (error) {
         console.error(error);
-        await Swal.fire("Gagal", "Tidak bisa menghapus data.", "error");
+        await Swal.fire({
+          title: "Gagal",
+          text: "Tidak bisa menghapus data.",
+          icon: "error",
+          timer: 5000,
+          timerProgressBar: true,
+        });
       } finally {
         setLoading(false);
       }
@@ -193,12 +209,24 @@ const Payments = () => {
       try {
         setLoading(true);
         await paymentService.deleteBulk("all");
-        await Swal.fire("Berhasil", "Semua data telah dihapus.", "success");
+        await Swal.fire({
+          title: "Berhasil",
+          text: "Semua data telah dihapus.",
+          icon: "success",
+          timer: 5000,
+          timerProgressBar: true,
+        });
         setSelectedIds([]);
         fetchPayments();
       } catch (error) {
         console.error(error);
-        await Swal.fire("Gagal", "Tidak bisa menghapus data.", "error");
+        await Swal.fire({
+          title: "Gagal",
+          text: "Tidak bisa menghapus data.",
+          icon: "error",
+          timer: 5000,
+          timerProgressBar: true,
+        });
       } finally {
         setLoading(false);
       }
@@ -231,6 +259,8 @@ const Payments = () => {
         icon: "success",
         title: "Berhasil",
         text: "Pembayaran berhasil dicatat.",
+        timer: 5000,
+        timerProgressBar: true,
       });
       setShowModal(false);
       // Refresh first page after new payment
@@ -250,6 +280,8 @@ const Payments = () => {
         icon: "error",
         title: "Gagal",
         text: "Tidak bisa menyimpan pembayaran.",
+        timer: 5000,
+        timerProgressBar: true,
       });
     } finally {
       setSubmitting(false);

@@ -55,7 +55,7 @@ class PaymentController extends Controller
             'house_id' => 'required|exists:houses,id',
             'resident_id' => 'required|exists:residents,id',
             'payment_type' => 'required|in:satpam,kebersihan,lainnya',
-            'amount' => 'required|numeric',
+            'amount' => 'required|numeric', 
             'payment_period_start' => 'required|date',
             'payment_period_end' => 'required|date',
         ]);

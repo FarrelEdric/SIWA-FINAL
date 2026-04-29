@@ -14,6 +14,7 @@ import {
   Receipt,
   Menu,
   X,
+  ClipboardList,
 } from "lucide-react";
 import "./styles/global.css";
 
@@ -26,6 +27,7 @@ import Residents from "./pages/Residents";
 import Houses from "./pages/Houses";
 import Payments from "./pages/Payments";
 import Expenses from "./pages/Expenses";
+import BillingSummary from "./pages/BillingSummary";
 
 const SidebarLink = ({ to, icon: Icon, children, onClick }) => {
   const location = useLocation();
@@ -210,6 +212,13 @@ function App() {
               Pembayaran
             </SidebarLink>
             <SidebarLink
+              to="/billing"
+              icon={ClipboardList}
+              onClick={() => setSidebarOpen(false)}
+            >
+              Laporan Tagihan
+            </SidebarLink>
+            <SidebarLink
               to="/expenses"
               icon={Receipt}
               onClick={() => setSidebarOpen(false)}
@@ -297,6 +306,7 @@ function App() {
               <Route path="/residents" element={<Residents />} />
               <Route path="/houses" element={<Houses />} />
               <Route path="/payments" element={<Payments />} />
+              <Route path="/billing" element={<BillingSummary />} />
               <Route path="/expenses" element={<Expenses />} />
             </Routes>
           </div>

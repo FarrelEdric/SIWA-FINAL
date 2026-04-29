@@ -17,10 +17,63 @@ class ResidentFactory extends Factory
      */
     public function definition(): array
     {
+        $firstNames = [
+            'Budi',
+            'Ahmad',
+            'Siti',
+            'Rini',
+            'Arif',
+            'Dewi',
+            'Handoko',
+            'Nurmalasari',
+            'Bambang',
+            'Widya',
+            'Eko',
+            'Lindawati',
+            'Hendra',
+            'Putri',
+            'Irwan',
+            'Sinta',
+            'Joko',
+            'Umi',
+            'Krisna',
+            'Lestari'
+        ];
+
+        $lastNames = [
+            'Susanto',
+            'Wijaya',
+            'Hermawan',
+            'Setiawan',
+            'Kusuma',
+            'Rahman',
+            'Pratama',
+            'Santoso',
+            'Budiman',
+            'Nugraha',
+            'Adityawan',
+            'Gunawan',
+            'Hartono',
+            'Sutrisno',
+            'Soeharto',
+            'Bambang',
+            'Permana',
+            'Hidayat',
+            'Kuncoro',
+            'Wirasana'
+        ];
+
+        $fullName = $this->faker->randomElement($firstNames) . ' ' . $this->faker->randomElement($lastNames);
+
+        // Generate Indonesian phone number starting with 08
+        $phoneNumber = '08' . $this->faker->numberBetween(12, 99) . '-' .
+            $this->faker->numerify('####') . '-' .
+            $this->faker->numerify('####');
+
         return [
-            'full_name' => $this->faker->name(),
+            'full_name' => $fullName,
             'resident_status' => $this->faker->randomElement(['tetap', 'kontrak']),
-            'phone_number' => $this->faker->phoneNumber(),
+            'phone_number' => $phoneNumber,
             'marital_status' => $this->faker->randomElement(['menikah', 'belum']),
             'ktp_photo' => null,
         ];

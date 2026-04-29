@@ -17,7 +17,7 @@ class HouseController extends Controller
 
     public function index(Request $request)
     {
-        $query = House::with(['currentResident', 'occupancyHistories.resident']);
+        $query = House::with(['currentResident', 'occupancyHistories.resident', 'payments.resident']);
 
         $q = trim((string) $request->query('q', ''));
         if ($q !== '') {
@@ -58,7 +58,7 @@ class HouseController extends Controller
 
     public function show(House $house)
     {
-        return response()->json($house->load(['currentResident', 'occupancyHistories.resident']));
+        return response()->json($house->load(['currentResident', 'occupancyHistories.resident', 'payments.resident']));
     }
 
     public function update(Request $request, House $house)

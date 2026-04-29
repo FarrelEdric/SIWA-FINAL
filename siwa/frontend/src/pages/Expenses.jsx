@@ -80,6 +80,8 @@ const Expenses = () => {
         icon: "error",
         title: "Gagal",
         text: "Tidak bisa mengambil data pengeluaran.",
+        timer: 5000,
+        timerProgressBar: true,
       });
     } finally {
       setLoading(false);
@@ -96,6 +98,8 @@ const Expenses = () => {
         icon: "success",
         title: "Berhasil",
         text: "Pengeluaran berhasil dicatat.",
+        timer: 5000,
+        timerProgressBar: true,
       });
       setShowModal(false);
       const res = await expenseService.getAll({
@@ -114,6 +118,8 @@ const Expenses = () => {
         icon: "error",
         title: "Gagal",
         text: "Tidak bisa menyimpan pengeluaran.",
+        timer: 5000,
+        timerProgressBar: true,
       });
     } finally {
       setSubmitting(false);
@@ -138,6 +144,8 @@ const Expenses = () => {
         icon: "success",
         title: "Berhasil",
         text: "Pengeluaran berhasil dihapus.",
+        timer: 5000,
+        timerProgressBar: true,
       });
       fetchExpenses();
     } catch (error) {
@@ -146,6 +154,8 @@ const Expenses = () => {
         icon: "error",
         title: "Gagal",
         text: "Tidak bisa menghapus pengeluaran.",
+        timer: 5000,
+        timerProgressBar: true,
       });
     }
   };
@@ -161,6 +171,8 @@ const Expenses = () => {
         icon: "error",
         title: "Gagal",
         text: "Tidak bisa memuat detail pengeluaran.",
+        timer: 5000,
+        timerProgressBar: true,
       });
     }
   };
@@ -188,6 +200,8 @@ const Expenses = () => {
         icon: "success",
         title: "Berhasil",
         text: "Semua pengeluaran berhasil dihapus.",
+        timer: 5000,
+        timerProgressBar: true,
       });
       setPage(1);
       fetchExpenses();
@@ -197,6 +211,8 @@ const Expenses = () => {
         icon: "error",
         title: "Gagal",
         text: "Tidak bisa menghapus semua pengeluaran.",
+        timer: 5000,
+        timerProgressBar: true,
       });
     }
   };
