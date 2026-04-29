@@ -27,23 +27,19 @@ class DashboardController extends Controller
 
         $balance = $totalIncome - $totalExpense;
 
-        // Chart Data (Last 12 Months)
+        // Chart Data (January to December for Selected Year)
         $chartData = [];
-        for ($i = 11; $i >= 0; $i--) {
-            $currentDate = now()->subMonths($i);
-            $m = $currentDate->month;
-            $y = $currentDate->year;
-
+        for ($m = 1; $m <= 12; $m++) {
             $income = Payment::whereMonth('payment_date', $m)
-                ->whereYear('payment_date', $y)
+                ->whereYear('payment_date', $year)
                 ->sum('amount');
 
             $expense = Expense::whereMonth('expense_date', $m)
-                ->whereYear('expense_date', $y)
+                ->whereYear('expense_date', $year)
                 ->sum('amount');
 
             $chartData[] = [
-                'month' => $currentDate->format('M Y'),
+                'month' => Carbon::create($year, $m, 1)->format('M'),
                 'income' => (float)$income,
                 'expense' => (float)$expense,
             ];

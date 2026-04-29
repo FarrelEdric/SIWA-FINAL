@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { billingService } from "../services/api";
-import { ClipboardList, Calendar, CheckCircle, XCircle, AlertCircle, FileDown, Search, ChevronDown } from "lucide-react";
+import { ClipboardList, Calendar, CheckCircle, XCircle, AlertCircle, FileDown, Search, ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
 import * as XLSX from 'xlsx';
 
 const BillingSummary = () => {
@@ -9,17 +9,39 @@ const BillingSummary = () => {
   const [month, setMonth] = useState(new Date().getMonth() + 1);
   const [year, setYear] = useState(new Date().getFullYear());
   const [searchTerm, setSearchTerm] = useState("");
+  const [page, setPage] = useState(1);
+  const [meta, setMeta] = useState({
+    current_page: 1,
+    last_page: 1,
+    total: 0
+  });
+  const [stats, setStats] = useState({
+    total_wajib: 0,
+    total_lunas: 0,
+    total_tunggakan: 0
+  });
+
+  useEffect(() => {
+    if (page !== 1) {
+      setPage(1);
+    } else {
+      fetchSummary();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [month, year, searchTerm]);
 
   useEffect(() => {
     fetchSummary();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [month, year]);
+  }, [page]);
 
   const fetchSummary = async () => {
     try {
       setLoading(true);
-      const res = await billingService.getSummary(month, year);
-      setSummary(res.data);
+      const res = await billingService.getSummary({ month, year, page, search: searchTerm });
+      setSummary(res.data.data);
+      setMeta(res.data.meta);
+      setStats(res.data.stats);
     } catch (error) {
       console.error(error);
     } finally {
@@ -49,37 +71,13 @@ const BillingSummary = () => {
     }
   };
 
-  const filteredSummary = summary.filter(item => {
-    const s = searchTerm.toLowerCase();
-    
-    // Status Hunian
-    const residentStatus = item.resident_status ? (item.resident_status === 'tetap' ? 'tetap' : 'kontrak') : 'kosong';
-    
-    // Status Akhir
-    let finalStatus = "";
-    if (!item.must_pay) {
-      finalStatus = "tidak ada tagihan";
-    } else if (item.satpam === 'lunas' && item.kebersihan === 'lunas') {
-      finalStatus = "lunas";
-    } else {
-      finalStatus = "tunggakan";
-    }
 
-    return (
-      item.house_number.toLowerCase().includes(s) ||
-      item.resident_name.toLowerCase().includes(s) ||
-      residentStatus.includes(s) ||
-      item.satpam.toLowerCase().includes(s) ||
-      item.kebersihan.toLowerCase().includes(s) ||
-      finalStatus.includes(s)
-    );
-  });
 
   const handleDownloadExcel = () => {
     const monthName = new Date(0, month - 1).toLocaleString('id-ID', { month: 'long' });
     const fileName = `${monthName} ${year}.xlsx`;
 
-    const data = filteredSummary.map(item => ({
+    const data = summary.map(item => ({
       'Nomor Rumah': item.house_number,
       'Nama Penghuni': item.resident_name,
       'Status Hunian': item.resident_status || 'Kosong',
@@ -228,7 +226,7 @@ const BillingSummary = () => {
           <button
             className="btn btn-primary"
             onClick={handleDownloadExcel}
-            disabled={filteredSummary.length === 0}
+            disabled={summary.length === 0}
             style={{
               height: "52px",
               padding: "0 1.75rem",
@@ -269,7 +267,7 @@ const BillingSummary = () => {
                     </td>
                   </tr>
                 ))
-              ) : filteredSummary.length === 0 ? (
+              ) : summary.length === 0 ? (
                 <tr>
                   <td colSpan={6} style={{ textAlign: "center", padding: "4rem", color: "var(--text-secondary)" }}>
                     <div style={{ opacity: 0.5, marginBottom: "1rem" }}>
@@ -279,7 +277,7 @@ const BillingSummary = () => {
                   </td>
                 </tr>
               ) : (
-                filteredSummary.map((item) => (
+                summary.map((item) => (
                   <tr key={item.house_id} style={{ cursor: "default" }}>
                     <td style={{ fontWeight: "700", paddingLeft: "1.5rem", color: "var(--text-strong)" }}>{item.house_number}</td>
                     <td>{item.resident_name}</td>
@@ -317,6 +315,62 @@ const BillingSummary = () => {
             </tbody>
           </table>
         </div>
+
+        {/* Pagination */}
+        {!loading && meta.last_page > 1 && (
+          <div style={{ 
+            display: "flex", 
+            justifyContent: "space-between", 
+            alignItems: "center", 
+            marginTop: "1.5rem",
+            padding: "0 0.5rem"
+          }}>
+            <p style={{ color: "var(--text-secondary)", fontSize: "0.9rem" }}>
+              Menampilkan <span style={{ fontWeight: "700", color: "var(--text-primary)" }}>{summary.length}</span> dari <span style={{ fontWeight: "700", color: "var(--text-primary)" }}>{meta.total}</span> rumah
+            </p>
+            <div style={{ display: "flex", gap: "0.5rem" }}>
+              <button
+                className="btn btn-outline"
+                style={{ padding: "0.5rem", minWidth: "40px" }}
+                disabled={page === 1}
+                onClick={() => setPage(p => p - 1)}
+              >
+                <ChevronLeft size={20} />
+              </button>
+              
+              {Array.from({ length: meta.last_page }, (_, i) => i + 1)
+                .filter(p => p === 1 || p === meta.last_page || (p >= page - 1 && p <= page + 1))
+                .map((p, i, arr) => (
+                  <React.Fragment key={p}>
+                    {i > 0 && arr[i-1] !== p - 1 && <span style={{ color: "var(--text-secondary)" }}>...</span>}
+                    <button
+                      className={`btn ${page === p ? 'btn-primary' : 'btn-outline'}`}
+                      style={{ 
+                        minWidth: "40px", 
+                        padding: "0.5rem",
+                        background: page === p ? "var(--primary)" : "transparent",
+                        borderColor: page === p ? "var(--primary)" : "var(--glass-border)",
+                        color: page === p ? "white" : "var(--text-primary)"
+                      }}
+                      onClick={() => setPage(p)}
+                    >
+                      {p}
+                    </button>
+                  </React.Fragment>
+                ))
+              }
+
+              <button
+                className="btn btn-outline"
+                style={{ padding: "0.5rem", minWidth: "40px" }}
+                disabled={page === meta.last_page}
+                onClick={() => setPage(p => p + 1)}
+              >
+                <ChevronRight size={20} />
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "1.5rem" }}>
@@ -330,7 +384,7 @@ const BillingSummary = () => {
               <div className="skeleton" style={{ height: "2.5rem", width: "100px", borderRadius: "0.5rem" }}></div>
             ) : (
               <h3 style={{ fontSize: "2rem", fontWeight: "900", color: "var(--text-strong)" }}>
-                {summary.filter(s => s.must_pay).length} <span style={{ fontSize: "1.1rem", fontWeight: "600", color: "var(--text-secondary)" }}>Unit</span>
+                {stats.total_wajib} <span style={{ fontSize: "1.1rem", fontWeight: "600", color: "var(--text-secondary)" }}>Unit</span>
               </h3>
             )}
           </div>
@@ -346,7 +400,7 @@ const BillingSummary = () => {
               <div className="skeleton" style={{ height: "2.5rem", width: "100px", borderRadius: "0.5rem" }}></div>
             ) : (
               <h3 style={{ fontSize: "2rem", fontWeight: "900", color: "var(--success)" }}>
-                {summary.filter(s => s.must_pay && s.satpam === 'lunas' && s.kebersihan === 'lunas').length} <span style={{ fontSize: "1.1rem", fontWeight: "600", color: "var(--text-secondary)" }}>Unit</span>
+                {stats.total_lunas} <span style={{ fontSize: "1.1rem", fontWeight: "600", color: "var(--text-secondary)" }}>Unit</span>
               </h3>
             )}
           </div>
@@ -362,7 +416,7 @@ const BillingSummary = () => {
               <div className="skeleton" style={{ height: "2.5rem", width: "100px", borderRadius: "0.5rem" }}></div>
             ) : (
               <h3 style={{ fontSize: "2rem", fontWeight: "900", color: "var(--danger)" }}>
-                {summary.filter(s => s.must_pay && (s.satpam === 'belum' || s.kebersihan === 'belum')).length} <span style={{ fontSize: "1.1rem", fontWeight: "600", color: "var(--text-secondary)" }}>Unit</span>
+                {stats.total_tunggakan} <span style={{ fontSize: "1.1rem", fontWeight: "600", color: "var(--text-secondary)" }}>Unit</span>
               </h3>
             )}
           </div>

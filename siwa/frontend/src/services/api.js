@@ -72,8 +72,7 @@ export const dashboardService = {
 };
 
 export const billingService = {
-  getSummary: (month, year) =>
-    api.get("/billing/summary", { params: { month, year } }),
+  getSummary: (params) => api.get("/billing/summary", { params }),
 };
 
 export default api;
