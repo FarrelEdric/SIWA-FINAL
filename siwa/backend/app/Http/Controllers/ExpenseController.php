@@ -82,11 +82,22 @@ class ExpenseController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'amount' => 'required|numeric',
+            'amount' => 'required|numeric|min:1',
             'expense_date' => 'required|date',
             'category' => 'required|string',
             'recurring' => 'required|boolean',
         ]);
+
+        // Validasi Saldo Utama
+        $totalIncome = \App\Models\Payment::sum('amount');
+        $totalExpense = Expense::sum('amount');
+        $currentBalance = $totalIncome - $totalExpense;
+
+        if ($validated['amount'] > $currentBalance) {
+            return response()->json([
+                'message' => 'Saldo Utama tidak mencukupi untuk melakukan pengeluaran ini. (Saldo saat ini: Rp ' . number_format($currentBalance, 0, ',', '.') . ')'
+            ], 422);
+        }
 
         $expense = Expense::create($validated);
         return response()->json($expense, 201);
@@ -102,11 +113,23 @@ class ExpenseController extends Controller
         $validated = $request->validate([
             'title' => 'string|max:255',
             'description' => 'nullable|string',
-            'amount' => 'numeric',
+            'amount' => 'numeric|min:1',
             'expense_date' => 'date',
             'category' => 'string',
             'recurring' => 'boolean',
         ]);
+
+        if (isset($validated['amount'])) {
+            $totalIncome = \App\Models\Payment::sum('amount');
+            $totalExpenseExceptThis = Expense::where('id', '!=', $expense->id)->sum('amount');
+            $maxAllowed = $totalIncome - $totalExpenseExceptThis;
+
+            if ($validated['amount'] > $maxAllowed) {
+                return response()->json([
+                    'message' => 'Saldo Utama tidak mencukupi untuk memperbarui nominal pengeluaran ini. (Maksimum yang diperbolehkan: Rp ' . number_format($maxAllowed, 0, ',', '.') . ')'
+                ], 422);
+            }
+        }
 
         $expense->update($validated);
         return response()->json($expense);

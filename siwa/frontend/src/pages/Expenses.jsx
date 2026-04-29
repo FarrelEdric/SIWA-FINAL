@@ -159,10 +159,11 @@ const Expenses = () => {
       fetchExpenses();
     } catch (error) {
       console.error(error);
+      const message = error.response?.data?.message || "Terjadi kesalahan saat menyimpan data.";
       await Swal.fire({
         icon: "error",
         title: "Gagal",
-        text: "Terjadi kesalahan saat menyimpan data.",
+        text: message,
       });
     } finally {
       setSubmitting(false);
